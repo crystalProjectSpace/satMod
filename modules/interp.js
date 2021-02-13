@@ -71,6 +71,17 @@ class Interp_2D {
 		this.nX2 = this.XV_2.length
 	}
 	/**
+	* @description задать отправные значения индексов
+	*/
+	setupIndices(X1, X2) {
+		this.index_1 = 0
+		this.index_2 = 0
+		
+		while(this.XV_1[this.index_1 + 1] < X1) { this.index_1++ }
+		
+		while(this.XV_2[this.index_2 + 1] < X2) { this.index_2++ }
+	}
+	/**
 	* @description проверить текущие значения индексов
 	*/
 	checkArgs(X1, X2) {
