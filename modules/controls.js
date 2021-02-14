@@ -2,6 +2,9 @@
 
 const controlFunctions = {
 	alphaControls: [
+		/**
+		* @description управление по углу атаки (нейтраль, дозвуковой разворот, постоянный угол атаки на сверхзвуке)
+		*/
 		function(stagePtr, kinematics, t) {
 			let result = 0
 			
@@ -19,6 +22,9 @@ const controlFunctions = {
 			return result
 		}
 	],
+	/**
+	* @description управление расходом топлива - расход постоянный
+	*/
 	fuelControls: [
 		function(stagePtr, kinematics, t) {
 			const mCurrent = kinematics[4]
