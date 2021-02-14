@@ -1,17 +1,15 @@
 'use strict'
 
-const enviro = require('./enviro.js')
-const interpolations = require('./interp.js')
+const {KE, RE, Atmo} = require('./enviro.js')			// постоянная грав.поля Земли, радиус Земли, атмосфера
+const {Interp_2D} = require('./interp.js')				// функции табличной интерполяции
+const {totalHeight} = require('./trajectoryUtils.js')	// вычисление высоты из абс.координат
 
-const KE = enviro.KE
-const RE = enviro.RE
-const Atmo = enviro.Atmo
-
-const Interp_2D = interpolations.Interp_2D
+const activeAtmo = new Atmo()	// объект для получения параметров стандартной атмосферы
 
 class VehicleStage {
 	/**
 	* @description описание ступени многоступенчатой РКН
+	* @return {void}
 	*/
 	constructor() {
 		this.mFuel = 0	//	масса топлива ступени
@@ -28,6 +26,7 @@ class VehicleStage {
 	}
 	/**
 	* @description задать ИД по массам конструкции, топлива, АДХ
+	* @return {void}
 	*/
 	init(mFuel, mDry, sMid, Jrel, MV, AV, CX, CY) {
 		this.mFuel = mFuel
@@ -43,12 +42,13 @@ class VehicleStage {
 	}
 	/**
 	* @description задать опорную точку траектории
+	* @return {void}
 	*/
 	getKinematics(Vx, Vy, X, Y) {
 		this.kinematics = [ Vx, Vy, X, Y, this.mFuel + this.mDry]
 		const Vabs = Math.sqrt(Vx * Vx + Vy * Vy)
 		const H = Math.sqrt(X * X + Y * Y) - RE
-		const atmoEnv = Atmo(H)
+		const atmoEnv = activeAtmo.getAtmo(H)
 		const Mach0 = Vabs / atmoEnv.aSn
 		const alpha0 = 0
 		
@@ -57,18 +57,21 @@ class VehicleStage {
 	}
 	/**
 	* @description задать закон управления в канале тангажа
+	* @return {void}
 	*/
 	setupPitchControl(pitchFuncPtr) {
 		this.alphaControl = pitchFuncPtr
 	}
 	/**
 	* @description задать закон управления расходом горючего
+	* @return {void}
 	*/
 	setupFuelControl(fuelFuncPtr) {
 		this.fuelControl = fuelFuncPtr
 	}
 	/**
 	* @description получить производные для ОДУ движения
+	* @return {Array.<Number>}
 	*/
 	derivs(kinematics, t) {
 		const Vx = kinematics[0]
@@ -87,7 +90,7 @@ class VehicleStage {
 		const CTH = Vx / Vabs
 		const STH = Vy / Vabs
 		const H = radVectAbs - RE
-		const atmoEnv = Atmo(H)
+		const atmoEnv = activeAtmo.getAtmo(H)
 		const Mach = Vabs / atmoEnv.aSn
 		const QS = 0.5 * atmoEnv.Ro * V2 * this.sMid
 		const CA = Math.cos(alpha/57.3)
@@ -112,6 +115,7 @@ class VehicleStage {
 	}
 	/**
 	* @description ЧИ 2-го порядка до заданного момента времени
+	* @return {Array.<{Number, Array.<Number>}>}
 	*/
 	integrate(t0, tMax, dT) {
 		const result = [
@@ -122,9 +126,14 @@ class VehicleStage {
 		let i = 0
 		const dT_05 = dT * 0.5
 		
+		activeAtmo.setupIndex(totalHeight(this.kinematics[2], this.kinematics[3])) // получили опорный индекс для интерполяции атомсферы
+		
 		while(tau < tMax) {
 			const kinematics_0 = result[i++].kinematics
 			const K0 = this.derivs(kinematics_0, tau)
+			
+			activeAtmo.checkIndex(totalHeight(kinematics_0[2], kinematics_0[3])) // уточнили актуальность атмосферы
+			
 			const kinematics_1 = [
 				kinematics_0[0] + dT_05 * K0[0],
 				kinematics_0[1] + dT_05 * K0[1],

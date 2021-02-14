@@ -11,6 +11,7 @@ class Interp_1D {
 	}
 	/**
 	* @description задать опорные точки для интерполяции
+	* @return {Object}
 	*/
 	init(X0, XV, YV) {
 		this.XV = XV
@@ -29,6 +30,7 @@ class Interp_1D {
 	}
 	/**
 	* @description проверить текущий индекс интерполяции
+	* @return {void}
 	*/
 	checkX(X) {
 		if( X > this.XV[this.index + 1]) {
@@ -42,6 +44,7 @@ class Interp_1D {
 	}
 	/**
 	* @description выполнить одномерную интерполяции
+	* @return {Number} 
 	*/
 	interp(X) {
 		return this.YV[this.index] + this.koef * (X - this.XV[this.index])
@@ -62,6 +65,7 @@ class Interp_2D {
 	}
 	/**
 	* @description заполнить вектора опорных значений
+	* @return {void}
 	*/
 	init(XV_1, XV_2, YV) {
 		this.XV_1 = XV_1
@@ -72,6 +76,7 @@ class Interp_2D {
 	}
 	/**
 	* @description задать отправные значения индексов
+	* @return {void}
 	*/
 	setupIndices(X1, X2) {
 		this.index_1 = 0
@@ -83,6 +88,7 @@ class Interp_2D {
 	}
 	/**
 	* @description проверить текущие значения индексов
+	* @return {void}
 	*/
 	checkArgs(X1, X2) {
 		if( X1 > this.XV_1[this.index_1 + 1]) {
@@ -98,7 +104,8 @@ class Interp_2D {
 		}
 	}
 	/**
-	* @description выполнить интерполяцию 
+	* @description выполнить интерполяцию
+	* @return {Number}
 	*/
 	interp(X1, X2) {
 		const i_21 = this.index_2 + 1
