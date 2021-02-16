@@ -115,9 +115,13 @@ class VehicleStage {
 	}
 	/**
 	* @description ЧИ 2-го порядка до заданного момента времени
-	* @return {Array.<{Number, Array.<Number>}>}
+	* @param {Number} t0 начальный момент времени
+	* @param {Function} finish условие полного окончания полета
+	* @param {Function} stage условие разделение ступеней
+	* @param {Number} dT шаг интегрирования
+	* @return {result: Array.<{Number, Array.<Number>}>, nextStage: Boolean, finishflight: Boolean}
 	*/
-	integrate(t0, tMax, dT) {
+	integrate(t0, finish, stage, dT) {
 		const result = [
 			{t: t0, kinematics: this.kinematics }
 		]
@@ -126,9 +130,13 @@ class VehicleStage {
 		let i = 0
 		const dT_05 = dT * 0.5
 		
+		let finishFlight = finish(result[i])
+		let nextStage = stage(result)
+		let continueIntegrate = !(finishFlight || nextStage)
+		
 		activeAtmo.setupIndex(totalHeight(this.kinematics[2], this.kinematics[3])) // получили опорный индекс для интерполяции атомсферы
 		
-		while(tau < tMax) {
+		while( continueIntegrate ) {
 			const kinematics_0 = result[i++].kinematics
 			const K0 = this.derivs(kinematics_0, tau)
 			
@@ -155,9 +163,13 @@ class VehicleStage {
 					kinematics_0[4] + dT * K1[4]
 				]
 			})
+			
+			nextStage = stage(result[i])
+			finish = finish(result[i])
+			continueIntegrate = !(nextStage || finishFlight)
 		}
 		
-		return result
+		return { result, nextStage, finishFlight }
 	}
 }
 

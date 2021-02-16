@@ -1,11 +1,11 @@
 'use strict'
 
-const controlFunctions = {
-	alphaControls: [
+const controlFunctions = [
+	{
 		/**
 		* @description управление по углу атаки (нейтраль, дозвуковой разворот, постоянный угол атаки на сверхзвуке)
 		*/
-		function(stagePtr, kinematics, t) {
+		alphaControls: function(stagePtr, kinematics, t) {
 			let result = 0
 			
 			if(t < 15) {
@@ -20,17 +20,38 @@ const controlFunctions = {
 			}
 			
 			return result
-		}
-	],
-	/**
-	* @description управление расходом топлива - расход постоянный
-	*/
-	fuelControls: [
-		function(stagePtr, kinematics, t) {
+		},
+		/**
+		* @description управление расходом топлива - расход постоянный
+		*/
+		fuelControls: function(stagePtr, kinematics, t) {
 			const mCurrent = kinematics[4]
 			return mCurrent > stagePtr.mDry ? 50 : 0
 		}
-	]
-}
+	},
+	{
+		/**
+		* @description управление по углу атаки (нейтраль, дозвуковой разворот, постоянный угол атаки на сверхзвуке)
+		*/
+		alphaControls: function(stagePtr, kinematics, t) {
+			let result = 0
+			const vAbs = Math.sqrt(kinematics[0] * kinematics[0] + kinematics[1] * kinematics[1])
+			if(vAbs > 1000) {
+				result = 4.5
+			} else {
+				result = -0.5
+			}
+			
+			return result
+		},
+		/**
+		* @description управление расходом топлива - расход постоянный
+		*/
+		fuelControls: function(stagePtr, kinematics, t) {
+			const mCurrent = kinematics[4]
+			return mCurrent > stagePtr.mDry ? 50 : 0
+		}
+	}
+]
 
 module.exports = controlFunctions
