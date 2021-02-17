@@ -125,13 +125,13 @@ class VehicleStage {
 		const result = [
 			{t: t0, kinematics: this.kinematics }
 		]
-		
+
 		let tau = t0
 		let i = 0
 		const dT_05 = dT * 0.5
-		
+
 		let finishFlight = finish(result[i])
-		let nextStage = stage(result)
+		let nextStage = stage(result[i])
 		let continueIntegrate = !(finishFlight || nextStage)
 		
 		activeAtmo.setupIndex(totalHeight(this.kinematics[2], this.kinematics[3])) // получили опорный индекс для интерполяции атомсферы
@@ -165,7 +165,7 @@ class VehicleStage {
 			})
 			
 			nextStage = stage(result[i])
-			finish = finish(result[i])
+			finishFlight = finish(result[i])
 			continueIntegrate = !(nextStage || finishFlight)
 		}
 		

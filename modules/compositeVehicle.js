@@ -43,7 +43,7 @@ class CompositeVehicle {
 			
 			result.init(
 				massGeometry.mFuel,
-				this.stageMasses[i].m1,
+				this.stageMasses[i].m0,
 				massGeometry.sMid,
 				massGeometry.jRel,
 				ADX.MV,
@@ -82,21 +82,22 @@ class CompositeVehicle {
 		let tau = 0
 		let globalResult = []
 		const conditions = {t: tau, kinemtics: startConditions}
+		this.setupStageKinematics(startConditions[0], startConditions[1], startConditions[2], startConditions[3])
 		
 		for(let i = 0; i < this.nStage; i++) {
-			const {result, nextStage, finishFlight} = this.stage[i].integrate(
+			const {result, nextStage, finishFlight} = this.stages[i].integrate(
 				tau,
-				this.stageFunctions[i],
 				globalFlag,
+				this.stageFunctions[i],
 				dT
 			)
 			
-			globalResults = globalResults.concat(result)
-			const lastIndex = globalResults.length - 1
+			globalResult = globalResult.concat(result)
+			const lastIndex = globalResult.length - 1
 			
 			if(!finishFlight) {
-				const lastPoint = this.globalResult[lastIndex].kinematics
-				tau = this.globalResult[lastIndex].tau
+				const lastPoint = globalResult[lastIndex].kinematics
+				tau = globalResult[lastIndex].t
 				
 				const Vx = lastPoint[0]
 				const Vy = lastPoint[1]
