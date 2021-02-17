@@ -13,20 +13,26 @@ const fallDown = function(dataPoint) {
 	return totalH < 6.3711E+6
 }
 
+const trj2CSV = function(data, name) {
+	const strData = data.map(dataPoint => {
+		const {t, kinematics} = dataPoint
+		const [Vx, Vy, X, Y, m] = kinematics
+		
+		return [
+			t.toFixed(1),
+			absVelocity(Vx, Vy).toFixed(1),
+			localHoryzonTh(Vx, Vy, X, Y).toFixed(2),
+			totalHeight(X, Y).toFixed(0),
+			globeRange(X, Y).toFixed(0),
+			m.toFixed(0)
+	].join(', ')
+	}).join('\n')
+	
+	fs.writeFile(`${name}.csv`, strData, 'ascii', function(err) { if(err) { console.log('failed to save result'); console.log(err)}})
+}
+
 testVehicle.setupVehicle(initData, controlFunctions, stageFunctions)
 
 const testTrajectory = testVehicle.calcTrajectory(fallDown, [0, 10, 0, 6.3711E+6 + 10], 0.1)
 
-testTrajectory.forEach(trjPoint => {
-	
-	const {t, kinematics} = trjPoint
-	const [Vx, Vy, X, Y, m] = kinematics
-	console.log([
-		t.toFixed(1),
-		absVelocity(Vx, Vy).toFixed(1),
-		localHoryzonTh(Vx, Vy, X, Y).toFixed(2),
-		totalHeight(X, Y).toFixed(0),
-		globeRange(X, Y).toFixed(0),
-		m.toFixed(0)
-	].join(' | '))
-})
+trj2CSV(testTrajectory, 'test_trajectory')
