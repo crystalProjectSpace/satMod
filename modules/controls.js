@@ -1,5 +1,20 @@
 'use strict'
 
+const {localHoryzonTh, totalHeight, absVelocity, globeRange} = require('./trajectoryUtils.js')
+
+// TO DO
+// Создать абстрактные функции управления углом атаки (постоянный угол, равновесное планирование, пике и т.д)
+//
+
+const genericControls = {
+	AOA_functions: {
+		
+	},
+	dM_functions: {
+		
+	}
+}
+
 const controlFunctions = [
 	{
 		/**

@@ -70,10 +70,8 @@ const Atmo = function() {
 	}
 }
 
-const enviro = {
+module.exports = {
 	KE: 0.39857128*1E+15,	// произведение грав.постоянной на массу Земли
 	RE: 6.3711*1E+6,		// радиус Земли
 	Atmo
 }
-
-module.exports = enviro

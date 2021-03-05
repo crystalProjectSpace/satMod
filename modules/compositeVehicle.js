@@ -1,6 +1,7 @@
 'use strict'
 
 const VehicleStage = require('./vehicleStage.js')
+const {performance} = require('perf_hooks')
 
 class CompositeVehicle {
 	constructor() {
@@ -83,6 +84,9 @@ class CompositeVehicle {
 		let globalResult = []
 		const conditions = {t: tau, kinemtics: startConditions}
 		this.setupStageKinematics(startConditions[0], startConditions[1], startConditions[2], startConditions[3])
+		const timeStart = performance.now()
+		
+		console.log('Trajectory calculation started\n')
 		
 		for(let i = 0; i < this.nStage; i++) {
 			const {result, nextStage, finishFlight} = this.stages[i].integrate(
@@ -105,10 +109,14 @@ class CompositeVehicle {
 				const Y = lastPoint[3]
 				
 				this.changeStage(Vx, Vy, X, Y)
+				
+				console.log(`t: ${tau}; stage ${i} activated`)
 			} else {
 				break;
 			}
 		}
+		
+		console.log(`Trajectory calc cmpl\nTime elapsed: ${(performance.now() - timeStart).toFixed(3)}ms\n`)
 		
 		return globalResult
 	}

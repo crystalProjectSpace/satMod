@@ -2,7 +2,7 @@
 
 const {RE} = require('./enviro.js')
 
-const trajectoryUtils = {
+module.exports = {
 	localHoryzonTh: function(Vx, Vy, X, Y) {
 		const absV2 = Vx * Vx + Vy * Vy
 		const absR2 = X * X + Y * Y
@@ -19,5 +19,3 @@ const trajectoryUtils = {
 		return Math.sqrt(Vx * Vx + Vy * Vy)
 	}
 }
-
-module.exports = trajectoryUtils

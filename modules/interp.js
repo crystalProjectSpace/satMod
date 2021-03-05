@@ -120,9 +120,7 @@ class Interp_2D {
 	}
 }
 
-const interpolations = {
+module.exports = {
 	Interp_1D: Interp_1D,
 	Interp_2D: Interp_2D,
 }
-
-module.exports = interpolations
