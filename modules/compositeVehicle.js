@@ -77,7 +77,7 @@ class CompositeVehicle {
 	* @param {Function}
 	* @param {Array.<Number>}
 	* @param {Number}
-	* @return
+	* @return {Array}
 	*/
 	calcTrajectory(globalFlag, startConditions, dT) {
 		let tau = 0

@@ -1,6 +1,6 @@
 const CompositeVehicle = require('./modules/compositeVehicle.js')
 const {initData, stageFunctions} = require('./modules/initial.js')
-const controlFunctions = require('./modules/controls.js')
+const {setupControls} = require('./modules/controls.js')
 const {trj2CSV} = require('./modules/outputHandler.js')
 const fs = require('fs')
 
@@ -11,7 +11,8 @@ fs.readFile('./data/vehicle_1.json', 'ascii', (err, rawData) => {
 		return totalH < 6.3711E+6
 	}
 	
-	const {initData} = JSON.parse(rawData)
+	const {initData, alpha_controls, fuel_controls} = JSON.parse(rawData)
+	const controlFunctions = setupControls(alpha_controls, fuel_controls)
 	
 	const testVehicle = new CompositeVehicle()
 	

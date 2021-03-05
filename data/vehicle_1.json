@@ -82,5 +82,43 @@
 				"jRel": 0
 			}
 		}
+	],
+	"alpha_controls": [
+		{
+			"type": "ascend_profile",
+			"prms": {
+				"maneuver_start": 15,
+				"maneuver_end": 25,
+				"k2": 0.45,
+				"k1": -18,
+				"k0": 168.75,
+				"V_super": 450,
+				"alpha_base": 0,
+				"alpha_super": -0.5
+			}
+		},
+		{
+			"type": "level_flight",
+			"prms": {
+				"alpha_base": 4.5,
+				"k_th": 0,
+				"th_base": 0,
+				"v_dive": 1000,
+				"alpha_dive": -0.5,
+				"k_th_dive": 0,
+				"th_dive": 0,
+				"alpha_max": 10
+			}
+		}
+	],
+	"fuel_controls": [
+		{
+			"type": "dm_constant",
+			"prms": { "dm_regular": 50}
+		},
+		{
+			"type": "dm_nodrain",
+			"prms": {}
+		}
 	]
 }
