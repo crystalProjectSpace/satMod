@@ -2,9 +2,6 @@
 
 const {localHoryzonTh, totalHeight, absVelocity, globeRange} = require('./trajectoryUtils.js')
 
-// TODO: перенести законы разделения ступеней
-// TODO: подумать, как вносить паузы между разделением по времени
-
 const genericControls = {
 	// шаблоны управления в канале тангажа
 	AOA_functions: {
@@ -98,13 +95,27 @@ const genericControls = {
 			}
 		}
 	},
+	// шаблоны разделения ступеней
+	stage_functions: {
+		"fuel_out": function() {
+			return function(stagePtr, kinematics, t) {
+				return Math.abs(kinematics[4]/stagePtr.mDry - 1) < 1E-3 
+			}
+		},
+		"no_stage": function() {
+			return function(stagePtr, kinematics, t) {
+				return false
+			}
+		}
+	},
 	/**
 	* @description Сформировать функции управления ступенями на основе ИД из json
-	* @param {Array.<{type: String, prms: Object}>} alphaControls ИД по законам управления в канале тангажа
-	* @param {Array.<{type: String, prms: Object}>} fuelControls ИД по расходам топлива
-	* @return {Array.<{alphaControls: Function, fuelControls: Function}>}
+	* @param {Array.<{type: String, prms: Object}>} alpha_controls ИД по законам управления в канале тангажа
+	* @param {Array.<{type: String, prms: Object}>} fuel_controls ИД по расходам топлива
+	* @param {Array.<{type: String, prms: Object}>} stage_controls ИД по законам разделения ступеней
+	* @return {Array.<{alphaControls: Function, fuelControls: Function, stageControls: Function}>}
 	*/
-	setupControls: function(alpha_controls, fuel_controls) {
+	setupControls: function(alpha_controls, fuel_controls, stage_controls) {
 		const nStage = alpha_controls.length
 		
 		const result = []
@@ -114,10 +125,13 @@ const genericControls = {
 			const alphaPrms = alpha_controls[i].prms
 			const dmType = fuel_controls[i].type
 			const dmPrms = fuel_controls[i].prms
+			const stageType = stage_controls[i].type
+			const stagePrms = stage_controls[i].prms
 
 			result.push({
 				alphaControls: genericControls.AOA_functions[alphaType](alphaPrms),
-				fuelControls: genericControls.dM_functions[dmType](dmPrms)
+				fuelControls: genericControls.dM_functions[dmType](dmPrms),
+				cutOffControls: genericControls.stage_functions[stageType](stagePrms)
 			})
 		}
 		

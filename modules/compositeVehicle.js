@@ -7,17 +7,14 @@ class CompositeVehicle {
 	constructor() {
 		this.stages = []
 		this.stageMasses = []
-		this.stageFunctions = []
 		this.nStage = 0
 		this.currentStage = 0
 	}
 	/**
 	* @description получить баллистическую сводку для ИД
 	*/
-	setupVehicle(stageData, stageControls, stageFunctions) {
+	setupVehicle(stageData, stageControls) {
 		this.nStage = stageData.length
-		
-		this.stageFunctions = stageFunctions
 		
 		this.stageMasses.length = this.nStage
 		
@@ -40,7 +37,7 @@ class CompositeVehicle {
 		this.stages = stageData.map((stage, i) => {
 			const result = new VehicleStage()
 			const {massGeometry, ADX} = stage
-			const {alphaControls, fuelControls} = stageControls[i]
+			const {alphaControls, fuelControls, cutOffControls} = stageControls[i]
 			
 			result.init(
 				massGeometry.mFuel,
@@ -55,6 +52,7 @@ class CompositeVehicle {
 			
 			result.setupPitchControl(alphaControls)
 			result.setupFuelControl(fuelControls)
+			result.setupStageControl(cutOffControls)
 			
 			return result
 		})
@@ -74,9 +72,9 @@ class CompositeVehicle {
 	}
 	/**
 	* @description Сквозной расчет всей траектории с учетом разделения ступеней
-	* @param {Function}
-	* @param {Array.<Number>}
-	* @param {Number}
+	* @param {Function} globalFlag условие полного прекращения полета
+	* @param {Array.<Number>} startConditions условия старта
+	* @param {Number} dT глобальный шаг интегрирования
 	* @return {Array}
 	*/
 	calcTrajectory(globalFlag, startConditions, dT) {
@@ -92,7 +90,6 @@ class CompositeVehicle {
 			const {result, nextStage, finishFlight} = this.stages[i].integrate(
 				tau,
 				globalFlag,
-				this.stageFunctions[i],
 				dT
 			)
 			

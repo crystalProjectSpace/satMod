@@ -1,10 +1,7 @@
 'use strict'
 
-const {KE, RE, Atmo} = require('./enviro.js')			// постоянная грав.поля Земли, радиус Земли, атмосфера
 const {Interp_2D} = require('./interp.js')				// функции табличной интерполяции
 const {totalHeight} = require('./trajectoryUtils.js')	// вычисление высоты из абс.координат
-
-const activeAtmo = new Atmo()	// объект для получения параметров стандартной атмосферы
 
 class VehicleStage {
 	/**
@@ -21,6 +18,7 @@ class VehicleStage {
 		
 		this.alphaControl = null	// закон управления по углу атаки
 		this.fuelControl = null		// закон управления расходом топлива
+		this.stage = null // закон разделения ступеней
 		
 		this.kinematics = [ 0,0,0,0,0 ] // кинематические параметры (Vx, Vy, X, Y, m)
 	}
@@ -47,8 +45,8 @@ class VehicleStage {
 	getKinematics(Vx, Vy, X, Y) {
 		this.kinematics = [ Vx, Vy, X, Y, this.mFuel + this.mDry]
 		const Vabs = Math.sqrt(Vx * Vx + Vy * Vy)
-		const H = Math.sqrt(X * X + Y * Y) - RE
-		const atmoEnv = activeAtmo.getAtmo(H)
+		const H = Math.sqrt(X * X + Y * Y) - global.ENVIRO.RE
+		const atmoEnv = global.ENVIRO.Atmo.getAtmo(H)
 		const Mach0 = Vabs / atmoEnv.aSn
 		const alpha0 = 0
 		
@@ -70,6 +68,13 @@ class VehicleStage {
 		this.fuelControl = fuelFuncPtr
 	}
 	/**
+	* @description задать закон завершения ступени
+	* @return {void}
+	*/
+	setupStageControl(stagePtr) {
+		this.stage = stagePtr
+	}
+	/**
 	* @description получить производные для ОДУ движения
 	* @return {Array.<Number>}
 	*/
@@ -89,8 +94,8 @@ class VehicleStage {
 		const Vabs = Math.sqrt(V2)
 		const CTH = Vx / Vabs
 		const STH = Vy / Vabs
-		const H = radVectAbs - RE
-		const atmoEnv = activeAtmo.getAtmo(H)
+		const H = radVectAbs - global.ENVIRO.RE
+		const atmoEnv = global.ENVIRO.Atmo.getAtmo(H)
 		const Mach = Vabs / atmoEnv.aSn
 		const QS = 0.5 * atmoEnv.Ro * V2 * this.sMid
 		const CA = Math.cos(alpha/57.3)
@@ -100,7 +105,7 @@ class VehicleStage {
 		
 		const XA = this.CX_mod.interp(Mach, alpha) * QS
 		const YA = this.CY_mod.interp(Mach, alpha) * QS
-		const gravForce = - KE / radVect3
+		const gravForce = - global.ENVIRO.KE / radVect3
 		const R = this.Jrel * dFuel
 		const RXA = R * CA
 		const RYA = R * SA
@@ -117,11 +122,10 @@ class VehicleStage {
 	* @description ЧИ 2-го порядка до заданного момента времени
 	* @param {Number} t0 начальный момент времени
 	* @param {Function} finish условие полного окончания полета
-	* @param {Function} stage условие разделение ступеней
 	* @param {Number} dT шаг интегрирования
 	* @return {result: Array.<{Number, Array.<Number>}>, nextStage: Boolean, finishflight: Boolean}
 	*/
-	integrate(t0, finish, stage, dT) {
+	integrate(t0, finish, dT) {
 		const result = [
 			{t: t0, kinematics: this.kinematics }
 		]
@@ -131,16 +135,16 @@ class VehicleStage {
 		const dT_05 = dT * 0.5
 
 		let finishFlight = finish(result[i])
-		let nextStage = stage(result[i])
+		let nextStage = this.stage(this, result[i].kinematics, tau)
 		let continueIntegrate = !(finishFlight || nextStage)
 		
-		activeAtmo.setupIndex(totalHeight(this.kinematics[2], this.kinematics[3])) // получили опорный индекс для интерполяции атомсферы
+		global.ENVIRO.Atmo.setupIndex(totalHeight(this.kinematics[2], this.kinematics[3])) // получили опорный индекс для интерполяции атомсферы
 		
 		while( continueIntegrate ) {
 			const kinematics_0 = result[i++].kinematics
 			const K0 = this.derivs(kinematics_0, tau)
 			
-			activeAtmo.checkIndex(totalHeight(kinematics_0[2], kinematics_0[3])) // уточнили актуальность атмосферы
+			global.ENVIRO.Atmo.checkIndex(totalHeight(kinematics_0[2], kinematics_0[3])) // уточнили актуальность атмосферы
 			
 			const kinematics_1 = [
 				kinematics_0[0] + dT_05 * K0[0],
@@ -164,7 +168,7 @@ class VehicleStage {
 				]
 			})
 			
-			nextStage = stage(result[i])
+			nextStage = this.stage(this, result[i].kinematics, result[i].t)
 			finishFlight = finish(result[i])
 			continueIntegrate = !(nextStage || finishFlight)
 		}

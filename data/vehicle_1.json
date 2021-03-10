@@ -120,5 +120,15 @@
 			"type": "dm_nodrain",
 			"prms": {}
 		}
+	],
+	"stage_controls": [
+		{
+			"type": "fuel_out",
+			"prms": {}
+		},
+		{
+			"type": "no_stage",
+			"prms": {}
+		}
 	]
 }
