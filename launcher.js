@@ -1,14 +1,3 @@
-const ENVIRO = require('./modules/enviro.js')
-
-global.ENVIRO = {
-	RE: ENVIRO.RE,
-	KE: ENVIRO.KE,
-	Atmo: new ENVIRO.Atmo()
-}
-
-const CompositeVehicle = require('./modules/compositeVehicle.js')
-const {setupControls} = require('./modules/controls.js')
-const {trj2CSV} = require('./modules/outputHandler.js')
 const fs = require('fs')
 
 const getInitData = path => new Promise((resolve, reject) => {
@@ -22,8 +11,26 @@ const getInitData = path => new Promise((resolve, reject) => {
 	})
 })
 
-getInitData('./data/vehicle_1.json')
+getInitData('./enviro/earth.json')
+.then(({R, K, atmosphere}) => {
+	const AtmoModel = require('./modules/atmoModel.js')
+	
+	const Atmo = new AtmoModel()
+	Atmo.initAtmo(atmosphere)
+	
+	global.ENVIRO = {
+		RE: R,
+		KE: K,
+		Atmo
+	}
+	
+	return getInitData('./data/vehicle_1.json')
+})
 .then(({initData, alpha_controls, fuel_controls, stage_controls}) => {
+	const CompositeVehicle = require('./modules/compositeVehicle.js')
+	const {setupControls} = require('./modules/controls.js')
+	const {trj2CSV} = require('./modules/outputHandler.js')
+	
 	const fallDown = function(dataPoint) {
 		const {kinematics} = dataPoint
 		const totalH = Math.sqrt(kinematics[2] * kinematics[2] + kinematics[3] * kinematics[3])
