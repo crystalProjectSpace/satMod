@@ -35,5 +35,23 @@ module.exports = {
 				}
 			}
 		)
+	},
+	/**
+	* @description Считать данные из стороннего файла
+	* @async
+	* @param {String} path
+	* @return {Promise}
+	*/
+	getInitData: function(path) {
+		return new Promise((resolve, reject) => {
+			fs.readFile(path, 'ascii',(err, rawData) => {
+				if(err) {
+					reject(err)
+				} else {
+					const initData = JSON.parse(rawData)
+					resolve(initData)
+				}
+			}) 
+		})
 	}
 }

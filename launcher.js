@@ -1,15 +1,4 @@
-const fs = require('fs')
-
-const getInitData = path => new Promise((resolve, reject) => {
-	fs.readFile(path, 'ascii',(err, rawData) => {
-		if(err) {
-			reject(err)
-		} else {
-			const initData = JSON.parse(rawData)
-			resolve(initData)
-		}
-	})
-})
+const {getInitData, trj2CSV} = require('./modules/fileUtils.js')
 
 getInitData('./enviro/earth.json')
 .then(({R, K, atmosphere}) => {
@@ -29,7 +18,6 @@ getInitData('./enviro/earth.json')
 .then(({initData, alpha_controls, fuel_controls, stage_controls}) => {
 	const CompositeVehicle = require('./modules/compositeVehicle.js')
 	const {setupControls} = require('./modules/controls.js')
-	const {trj2CSV} = require('./modules/outputHandler.js')
 	
 	const fallDown = function(dataPoint) {
 		const {kinematics} = dataPoint
