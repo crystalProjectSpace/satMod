@@ -1,4 +1,4 @@
-# EN satMod.Pgrogram for trajectory estimation for multi-staged flight and launch vehicles
+# EN satMod.Program for trajectory estimation for multi-staged flight and launch vehicles
 
 Program is based upon numerical integration of ordinary differential equations governing movements of material point in central gravity field (X - Y coordinates centered on spherical Earth, no side maneuvers). Atmosphere model (pressure, tempreature, density, speed of sound) is a standart GOST 4401-81 atmosphere 
 
@@ -77,6 +77,7 @@ Each element of initData contains information about vehicle stage performance (t
 
 - [x] Задавать законы разделения ступеней ЛА в шаблонной форме, как это сделано с законами управления тангажом и расходом топлива
 - [x] Настроить задание параметров среды (атмосфера, радиус, параметр гравитационного поля) через внешний файл
+- [] Оценивать орбитальные параметры ЛА в соотв. с теорией Кеплера (критично для расчета ИСЗ!)
 - [ ] Расширить выдачу программы (перегрузки по осям, скоростной напор, качество). Возможно, что создать аналитический модуль, совместно оценивающий траекторные параметры и характеристики ЛА
 - [ ] Сформировать блок ИД для ЛА - легкой трехступенчатой РКН, выводящей КА на НОО (ориент. - 20 тонн, 100 кг, 500 км)
 - [ ] Настраиваемая подача ИД через файл-конфигурацию

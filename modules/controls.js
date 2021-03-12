@@ -1,6 +1,7 @@
 'use strict'
 
 const {localHoryzonTh, totalHeight, absVelocity, globeRange} = require('./trajectoryUtils.js')
+const {KeplerObject} = require('./kepler.js')
 
 const genericControls = {
 	// шаблоны управления в канале тангажа
@@ -72,6 +73,30 @@ const genericControls = {
 				}
 				
 				return result
+			}
+		},
+		/**
+		* @description Функция управления верхней ступенью с достижением заданной высоты апогея
+		* @param {Object}
+		* @return {Function}
+		*/
+		"apocenter_ascend": function({
+			alphaBase,	// базовый угол атаки
+			kH,			// коэффициент чувствительности
+			alphaMax,	// максимальный угол атаки
+			hApoReq 	// заданная высота апогея
+		}) {
+			return function(stagePtr, kinematics, t) {
+				const Th = localHoryzonTh(kinematics[0], kinematics[1], kinematics[2], kinematics[3])
+				const H = totalHeight(kinematics[2], kinematics[3])
+				const V = absVelocity(kinematics[0], kinematics[1])
+				const hApo = KeplerObject.getApo(V, H, Th)
+				const relApoH = (hApoReq / hApo) - 1
+				const alpha = alphaBase - kH * relApoH
+				
+				return alpha < 0 ?
+					Math.max(alpha, -alphaMax) :
+					Math.min(alpha, alphaMax)
 			}
 		}		
 	},
