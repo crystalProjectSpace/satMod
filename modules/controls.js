@@ -118,6 +118,25 @@ const genericControls = {
 			return function(stagePtr, kinematics, t) {
 				return 0
 			}
+		},
+		/**
+		 * @description выведение на круговую орбиту
+		 */
+		"orbit_insertion": function({
+			tauFire, // время начала скругления орбиты отн. точки апогея
+			dM // программный расход
+		}) {
+			return function(stagePtr, kinematics, t ) {
+				const Th = localHoryzonTh(kinematics[0], kinematics[1], kinematics[2], kinematics[3])
+				const H = totalHeight(kinematics[2], kinematics[3])
+				const V = absVelocity(kinematics[0], kinematics[1])
+				
+				const {tauApo} = KeplerObject.getCurrentOrb(V, H, Th)
+				// Main Engine Cut-Off условие отсечки тяги - или достигли круговую скорость, или сожгли все топливо
+				const MECO = (V >= global.ENVIRO.V_circular(H)) || (Math.abs(kinematics[4]/stagePtr.mDry - 1) < 1E-3)
+				
+				return (!MECO && tauApo >= tauFire) ? dM : 0
+			}
 		}
 	},
 	// шаблоны разделения ступеней

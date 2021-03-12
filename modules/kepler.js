@@ -58,7 +58,6 @@ class KeplerObject {
 		
 		const C1 = Math.pow(pAxis, 1.5) / (Math.sqrt(KE) * (1 - ex_2))
 		const C3 = 1 / Math.sqrt(1 - ex_2)
-		console.log(C1, C3, X0, (1 -( vApo * vApo * hApo / KE) ) / excen)
 		const tauApo = C1 * (C3 * (X0 - X1) + Math.tan(Th))
 		
 		return  {

@@ -10,7 +10,8 @@ getInitData('./enviro/earth.json')
 	global.ENVIRO = {
 		RE: R,
 		KE: K,
-		Atmo
+		Atmo,
+		vCircular: H => Math.sqrt(KE / (R + H))
 	}
 	
 	return getInitData('./data/vehicle_1.json')
