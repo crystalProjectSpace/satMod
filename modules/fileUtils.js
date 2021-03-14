@@ -1,9 +1,9 @@
 'use strict'
 
 const fs = require('fs')
-const {localHoryzonTh, totalHeight, absVelocity, globeRange} = require('./trajectoryUtils.js')
+const {localHoryzonTh, totalHeight, absVelocity, globeRange, local2Global} = require('./trajectoryUtils.js')
 
-module.exports = {
+const fileUtils = {
 	/**
 	* @description Записать основные траекторные данные в csv-файл
 	* @param {Array.<{t: Number, kinematics: Array.<Number>}>} Массив базовых траекторных данных (время + скорости/координаты)
@@ -53,5 +53,24 @@ module.exports = {
 				}
 			}) 
 		})
+	},
+	/**
+	* @description получить список файлов директории
+	* @async
+	* @param {String} path
+	* @return {Promise} 
+	*/
+	getDirContent: function(path) {
+		return new Promise((resolve, reject) => {
+			fs.readdir(path, (err, dirContent) => {
+				if(err) {
+					reject(err)
+				} else {
+					resolve(dirContent)
+				}
+			})
+		})
 	}
 }
+
+module.exports = fileUtils

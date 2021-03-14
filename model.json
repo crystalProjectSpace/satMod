@@ -1,0 +1,16 @@
+{
+	"activeVariant": 0,
+	"initialVars": [
+		{
+			"vehicle": "vehicle_1",
+			"planet": "Earth",
+			"launchConditions": {
+				"V": 10,
+				"Th": 1.5708,
+				"H": 10
+			},
+			"dT": 0.1,
+			"description": "Экспериментальный планирующий ЛА с одноступенчатым ракетным ускорителем"
+		}
+	]
+}
