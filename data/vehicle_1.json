@@ -123,8 +123,10 @@
 	],
 	"stage_controls": [
 		{
-			"type": "fuel_out",
-			"prms": {}
+			"type": "max_q_pass",
+			"prms": {
+				"qMax": 150
+			}
 		},
 		{
 			"type": "no_stage",

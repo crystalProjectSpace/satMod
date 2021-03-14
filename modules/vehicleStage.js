@@ -15,6 +15,8 @@ class VehicleStage {
 		this.Jrel = 0	//	удельный импульс ДУ
 		this.CX_mod = null	//	интерполятор для CXa
 		this.CY_mod = null	//	интерполятор для CYa
+
+		this.tMECO = 0 // глобальное время выключения ДУ ступени
 		
 		this.alphaControl = null	// закон управления по углу атаки
 		this.fuelControl = null		// закон управления расходом топлива
@@ -87,6 +89,11 @@ class VehicleStage {
 		
 		const alpha = this.alphaControl(this, kinematics, t)
 		const dFuel = this.fuelControl(this, kinematics, t)
+
+		if(dFuel === 0 && !this.tMECO) {
+			this.tMECO = t
+		}
+
 		const V2 = Vx * Vx + Vy * Vy
 		const radVect2 = X * X + Y * Y
 		const radVectAbs = Math.sqrt(radVect2)
@@ -106,17 +113,28 @@ class VehicleStage {
 		const XA = this.CX_mod.interp(Mach, alpha) * QS
 		const YA = this.CY_mod.interp(Mach, alpha) * QS
 		const gravForce = - global.ENVIRO.KE / radVect3
-		const R = this.Jrel * dFuel
-		const RXA = R * CA
-		const RYA = R * SA
-		
-		return [
-			gravForce * X + ( (RXA - XA) * CTH - (RYA + YA) * STH ) / m,
-			gravForce * Y + ( (RXA - XA) * STH + (RYA + YA) * CTH ) / m,
-			Vx,
-			Vy,
-			-dFuel
-		]		
+
+		if(dFuel > 0) {
+			const R = this.Jrel * dFuel
+			const RXA = R * CA
+			const RYA = R * SA
+			
+			return [
+				gravForce * X + ( (RXA - XA) * CTH - (RYA + YA) * STH ) / m,
+				gravForce * Y + ( (RXA - XA) * STH + (RYA + YA) * CTH ) / m,
+				Vx,
+				Vy,
+				-dFuel
+			]	
+		} else {
+			return [
+				gravForce * X + ( - XA * CTH - YA * STH ) / m,
+				gravForce * Y + ( - XA * STH + YA * CTH ) / m,
+				Vx,
+				Vy,
+				0
+			]	
+		}
 	}
 	/**
 	* @description ЧИ 2-го порядка до заданного момента времени

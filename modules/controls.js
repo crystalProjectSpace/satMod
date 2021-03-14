@@ -141,14 +141,50 @@ const genericControls = {
 	},
 	// шаблоны разделения ступеней
 	stage_functions: {
+		/**
+		 * @description Разделение ступеней немедленно после выработки топлива
+		 * @return {Boolean}
+		 */
 		"fuel_out": function() {
 			return function(stagePtr, kinematics, t) {
-				return Math.abs(kinematics[4]/stagePtr.mDry - 1) < 1E-3 
+				return !!stagePtr.tMECO
 			}
 		},
+		/**
+		 * @description Не разделять ступени
+		 * @return {Boolean}
+		 */
 		"no_stage": function() {
 			return function(stagePtr, kinematics, t) {
 				return false
+			}
+		},
+		/**
+		 * @description Разделять ступени спустя заданное время
+		 * @param {Number} tauMax 
+		 * @returns 
+		 */
+		"time_out": function({tauMax}) {
+			return function(stagePtr, kinematics, tau) {
+				return (stagePtr.tMECO !== 0) && (tau > stagePtr.tMECO + tauMax)
+			}
+		},
+		/**
+		 * @description Разделять ступени по величине скоростного напора
+		 * @param {Number} qMax 
+		 * @returns 
+		 */
+		"max_q_pass": function({qMax}) {
+			return function(stagePtr, kinematics, t) {
+				if(stagePtr.tMECO === 0) {
+					return false
+				} else {
+					const H = Math.sqrt(kinematics[2] * kinematics[2] + kinematics[3] * kinematics[3]) - global.ENVIRO.RE
+					const {Ro} = global.ENVIRO.Atmo.getAtmo(H)
+					const vAbs_2 = kinematics[0] * kinematics[0] + kinematics[1] * kinematics[1]
+					const Q = 0.5 * Ro * vAbs_2
+					return Q < qMax
+				}
 			}
 		}
 	},
