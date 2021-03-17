@@ -101,7 +101,7 @@
 			"type": "level_flight",
 			"prms": {
 				"alpha_base": 4.5,
-				"k_th": 0,
+				"k_th": 1.15,
 				"th_base": 0,
 				"v_dive": 1000,
 				"alpha_dive": -0.5,

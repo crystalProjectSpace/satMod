@@ -1,6 +1,6 @@
 'use strict'
 
-module.exports = {
+const trajectoryUtils = {
 	/**
 	* @description угол наклона к местному горизонту 
 	* @return {Number}
@@ -9,7 +9,7 @@ module.exports = {
 		const absV2 = Vx * Vx + Vy * Vy
 		const absR2 = X * X + Y * Y
 		
-		return Math.acos((Vx * Y - Vy * X)/Math.sqrt(absV2 * absR2)) * 57.3 * Math.sign(Vy * Y + Vx * X)
+		return Math.acos((Vx * Y - Vy * X)/Math.sqrt(absV2 * absR2)) * Math.sign(Vy * Y + Vx * X)
 	},
 	/**
 	* @description высота над поверхостью планеты
@@ -40,7 +40,7 @@ module.exports = {
 	* @param {Number}[L = 0] L пройденная дальность в проекции на поверхность, по умолчанию - нуль
 	* @return {{Vx:Number, Vy:Number, X:Number, Y:Number}}
 	*/
-	local2Global(V, H, Th, L = 0) {
+	local2Global: function(V, H, Th, L = 0) {
 		const H1 = H + global.ENVIRO.RE
 		const Betha = L / global.ENVIRO.RE
 		
@@ -63,5 +63,85 @@ module.exports = {
 			X,
 			Y
 		}
+	},
+	/**
+	* @description провести анализ траектории
+	* @param {Array.<{kinematics: Array.<Number>, t: Number}>} массив "сырых" точек по траектории
+	* @return {Array.<Array.<Number>>} Массив траекторных данных
+	*/
+	analyzeTrajectory: function(rawTrajectory) {
+		const nTrajectory = rawTrajectory.length
+		const {
+			absVelocity,
+			localHoryzonTh,
+			totalHeight,
+			globeRange
+		} = trajectoryUtils
+		
+		let V_0 = 0
+		let V_1 = 0
+		let Th_0 = 0
+		let Th_1 = 0
+		let M0 = 0
+		let M1 = 0
+		const dT = rawTrajectory[1].t - rawTrajectory[0].t
+		
+		const result = []
+		
+		for(let i = 0; i < nTrajectory; i++) {
+			const {t, kinematics} = rawTrajectory[i]
+			const [Vx, Vy, X, Y, m] = kinematics
+			const Vabs = absVelocity(Vx, Vy)
+			const ThLocal = localHoryzonTh(Vx, Vy, X, Y)
+			const H = totalHeight(X, Y)
+			const L = globeRange(X, Y)
+			
+			let aX = 0
+			let aY = 0
+			let dM = 0
+			
+			if(i > 0) {				
+				V_0 = V_1
+				Th_0 = Th_1
+				V_1 = Vabs
+				Th_1 = ThLocal
+				aX = (V_1 - V_0) / dT
+				aY = 0.5 * (V_1 + V_0) * (Th_1 - Th_0) / dT
+				
+				M0 = M1
+				M1 = m
+				
+				dM = (M1 - M0)/dT				
+			} else {
+				V_1 = Vabs
+				Th_1 = ThLocal
+				
+				M1 = m
+			}
+			
+			const atmoEnv = global.ENVIRO.Atmo.getAtmo(H)
+			const Q = atmoEnv.Ro * Vabs * Vabs * 0.5
+			
+			result.push([
+				t,		// текущее время
+				Vabs,	// абсолютная скорость
+				ThLocal,// угол наклона траектории к местному горизонту
+				H,		// высота над уровнем планеты
+				L,		// пройденная дальность
+				m,		// текущая масса
+				aX,		// тангенциальное ускорение
+				aY,		// нормальное ускорение
+				dM,		// расход массы 
+				Q,		// скоростной напор
+				X,		// продольная координата (ГСК)
+				Y,		// поперечная координата (ГСК)
+				Vx,		// скорость продольная (ГСК)
+				Vy		// скорость поперечная (ГСК)
+			])
+		}
+
+		return result 		
 	}
 }
+
+module.exports = trajectoryUtils

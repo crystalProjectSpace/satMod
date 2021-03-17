@@ -27,8 +27,8 @@ getInitData('./model.json')
 	.then(({initData, alpha_controls, fuel_controls, stage_controls}) => {
 		const CompositeVehicle = require('./modules/compositeVehicle.js')
 		const {setupControls} = require('./modules/controls.js')
-		const {local2Global} = require('./modules/trajectoryUtils.js')
-		
+		const {local2Global, analyzeTrajectory} = require('./modules/trajectoryUtils.js')
+
 		const {Vx, Vy, X, Y} = local2Global(launchConditions.V, launchConditions.H, launchConditions.Th)
 		
 		const fallDown = function(dataPoint) {
@@ -44,7 +44,9 @@ getInitData('./model.json')
 		testVehicle.setupVehicle(initData, controlFunctions)
 
 		const testTrajectory = testVehicle.calcTrajectory(fallDown, [Vx, Vy, X, Y], dT)
+		
+		const analyzedTrajectory = analyzeTrajectory(testTrajectory)
 
-		trj2CSV(testTrajectory, 'test_trajectory')
+		trj2CSV(analyzedTrajectory, 'test_trajectory')
 	})	
 })

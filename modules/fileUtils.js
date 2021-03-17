@@ -1,27 +1,49 @@
 'use strict'
 
 const fs = require('fs')
-const {localHoryzonTh, totalHeight, absVelocity, globeRange, local2Global} = require('./trajectoryUtils.js')
 
 const fileUtils = {
 	/**
 	* @description Записать основные траекторные данные в csv-файл
-	* @param {Array.<{t: Number, kinematics: Array.<Number>}>} Массив базовых траекторных данных (время + скорости/координаты)
+	* @param {Array.<Array.<Number>>} Массив базовых траекторных данных (время + скорости/координаты)
 	* @param {Name} имя файла, в который ведется запись результатов
 	*/
 	trj2CSV: function(data, name) {
 		const strData = data.map(dataPoint => {
-			const {t, kinematics} = dataPoint
-			const [Vx, Vy, X, Y, m] = kinematics
+
+			const [
+				t,		// текущее время
+				Vabs,	// абсолютная скорость
+				ThLocal,// угол наклона траектории к местному горизонту
+				H,		// высота над уровнем планеты
+				L,		// пройденная дальность
+				m,		// текущая масса
+				aX,		// тангенциальное ускорение
+				aY,		// нормальное ускорение
+				dM,		// расход массы 
+				Q,		// скоростной напор
+				X,		// продольная координата (ГСК)
+				Y,		// поперечная координата (ГСК)
+				Vx,		// скорость продольная (ГСК)
+				Vy		// скорость поперечная (ГСК)
+			] = dataPoint
 			
 			return [
 				t.toFixed(1),
-				absVelocity(Vx, Vy).toFixed(1),
-				localHoryzonTh(Vx, Vy, X, Y).toFixed(2),
-				totalHeight(X, Y).toFixed(0),
-				globeRange(X, Y).toFixed(0),
-				m.toFixed(0)
-		].join(', ')
+				Vabs.toFixed(1),
+				(ThLocal * 57.3).toFixed(2),
+				H.toFixed(0),
+				L.toFixed(0),
+				m.toFixed(0),
+				aX.toFixed(2),
+				aY.toFixed(2),
+				dM.toFixed(2),
+				Q.toFixed(0),
+				X.toFixed(0),
+				Y.toFixed(0),
+				Vx.toFixed(1),
+				Vy.toFixed(1)
+		].join(',\t')
 		}).join('\n')
 		
 		fs.writeFile(
