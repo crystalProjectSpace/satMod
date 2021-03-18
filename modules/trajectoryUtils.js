@@ -88,16 +88,22 @@ const trajectoryUtils = {
 		
 		const result = []
 		
+		const {KE, RE, Atmo} = global.ENVIRO
+
 		for(let i = 0; i < nTrajectory; i++) {
 			const {t, kinematics} = rawTrajectory[i]
 			const [Vx, Vy, X, Y, m] = kinematics
 			const Vabs = absVelocity(Vx, Vy)
+			const V2 = Vabs * Vabs
 			const ThLocal = localHoryzonTh(Vx, Vy, X, Y)
 			const H = totalHeight(X, Y)
 			const L = globeRange(X, Y)
-			
-			let aX = 0
-			let aY = 0
+
+			const hTotal = H + RE
+			const g = KE / (hTotal * hTotal)
+
+			let nX = 0
+			let nY = 0
 			let dM = 0
 			
 			if(i > 0) {				
@@ -105,8 +111,10 @@ const trajectoryUtils = {
 				Th_0 = Th_1
 				V_1 = Vabs
 				Th_1 = ThLocal
-				aX = (V_1 - V_0) / dT
-				aY = 0.5 * (V_1 + V_0) * (Th_1 - Th_0) / dT
+				const Th_av = 0.5 * (Th_0 + Th_1)
+				const V_av = 0.5 * (V_1 + V_0)
+				nX = ((V_1 - V_0) / dT) + g * Math.sin(Th_av)
+				nY = (V_av * (Th_1 - Th_0) / dT) + g * Math.cos(Th_av) - (V2 / hTotal) // учитываем центробежную разгрузку при определении Ny
 				
 				M0 = M1
 				M1 = m
@@ -118,9 +126,10 @@ const trajectoryUtils = {
 				
 				M1 = m
 			}
-			
-			const atmoEnv = global.ENVIRO.Atmo.getAtmo(H)
-			const Q = atmoEnv.Ro * Vabs * Vabs * 0.5
+
+			Atmo.checkIndex(H)
+			const atmoEnv = Atmo.getAtmo(H)
+			const Q =  atmoEnv.Ro * V2 * 0.5
 			
 			result.push([
 				t,		// текущее время
@@ -129,8 +138,8 @@ const trajectoryUtils = {
 				H,		// высота над уровнем планеты
 				L,		// пройденная дальность
 				m,		// текущая масса
-				aX,		// тангенциальное ускорение
-				aY,		// нормальное ускорение
+				nX,		// тангенциальное ускорение
+				nY,		// нормальное ускорение
 				dM,		// расход массы 
 				Q,		// скоростной напор
 				X,		// продольная координата (ГСК)
