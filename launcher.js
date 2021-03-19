@@ -37,6 +37,10 @@ getInitData('./model.json')
 			return totalH < global.ENVIRO.RE
 		}
 		
+		const timeOut = function(dataPoint) {
+			return dataPoint.t > 70
+		}
+		
 		const controlFunctions = setupControls(alpha_controls, fuel_controls, stage_controls)
 		
 		const testVehicle = new CompositeVehicle()
@@ -45,7 +49,7 @@ getInitData('./model.json')
 
 		const testTrajectory = testVehicle.calcTrajectory(fallDown, [Vx, Vy, X, Y], dT)
 		
-		const analyzedTrajectory = analyzeTrajectory(testTrajectory)
+		const analyzedTrajectory = analyzeTrajectory(testTrajectory, 10)
 
 		trj2CSV(analyzedTrajectory, 'test_trajectory')
 	})	

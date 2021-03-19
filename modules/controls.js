@@ -29,18 +29,25 @@ const genericControls = {
 				alpha_dive,	// угол атаки при пикировании
 				k_th_dive,	// коэфф. чувствительности при пикировании
 				th_dive,	// удерживаемый угол снижения в пике
-				alpha_max	// максимально допустимый угол атаки
+				alpha_max,	// максимально допустимый угол атаки
+				t_pullup // высота начала маневра планирования
 			}) {
 			return function(stagePtr, kinematics, t) {
-				const Th = localHoryzonTh(kinematics[0], kinematics[1], kinematics[2], kinematics[3])
-				const Vabs = Math.sqrt(kinematics[0] * kinematics[0] + kinematics[1] * kinematics[1])
-				const alpha = (Vabs > v_dive) ?
-					(alpha_base - k_th * (Th - th_base)) :
-					(alpha_dive - k_th_dive * (Th - th_dive))
-					
-				return (alpha < 0) ?
-					Math.max(alpha, -alpha_max) :
-					Math.min(alpha, alpha_max)
+				const H = totalHeight(kinematics[2], kinematics[3])
+				if((t_pullup && t > t_pullup) || !t_pullup) {
+					const Th = localHoryzonTh(kinematics[0], kinematics[1], kinematics[2], kinematics[3])
+					const Vabs = Math.sqrt(kinematics[0] * kinematics[0] + kinematics[1] * kinematics[1])
+
+					const alpha = (Vabs > v_dive) ?
+						(alpha_base - k_th * (Th - th_base)) :
+						(alpha_dive - k_th_dive * (Th - th_dive))
+
+					return (alpha < 0) ?
+						Math.max(alpha, -alpha_max) :
+						Math.min(alpha, alpha_max)
+				} else {
+					return 0
+				}
 			} 
 		},
 		/**

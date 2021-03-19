@@ -23,7 +23,16 @@ const trajectoryUtils = {
 	* @return {Number}
 	*/
 	globeRange: function(X, Y) {
-		return global.ENVIRO.RE * Math.atan(X/Y)
+		if(X > 0) {
+			return Y > 0 ?
+				global.ENVIRO.RE * Math.atan(X/Y) :
+				global.ENVIRO.RE * (Math.PI + Math.atan(X/Y))
+		} else {
+			return Y < 0 ?
+				global.ENVIRO.RE * (Math.PI + Math.atan(X/Y)) :
+				global.ENVIRO.RE * (2 * Math.PI - Math.atan(X/Y))
+		}
+		
 	},
 	/**
 	* @description модуль значения скорости
@@ -69,7 +78,7 @@ const trajectoryUtils = {
 	* @param {Array.<{kinematics: Array.<Number>, t: Number}>} массив "сырых" точек по траектории
 	* @return {Array.<Array.<Number>>} Массив траекторных данных
 	*/
-	analyzeTrajectory: function(rawTrajectory) {
+	analyzeTrajectory: function(rawTrajectory, rarify = 1) {
 		const nTrajectory = rawTrajectory.length
 		const {
 			absVelocity,
@@ -126,27 +135,30 @@ const trajectoryUtils = {
 				
 				M1 = m
 			}
-
-			Atmo.checkIndex(H)
+			i === 0 ? Atmo.setupIndex(H) : Atmo.checkIndex(H)
 			const atmoEnv = Atmo.getAtmo(H)
 			const Q =  atmoEnv.Ro * V2 * 0.5
 			
-			result.push([
-				t,		// текущее время
-				Vabs,	// абсолютная скорость
-				ThLocal,// угол наклона траектории к местному горизонту
-				H,		// высота над уровнем планеты
-				L,		// пройденная дальность
-				m,		// текущая масса
-				nX,		// тангенциальное ускорение
-				nY,		// нормальное ускорение
-				dM,		// расход массы 
-				Q,		// скоростной напор
-				X,		// продольная координата (ГСК)
-				Y,		// поперечная координата (ГСК)
-				Vx,		// скорость продольная (ГСК)
-				Vy		// скорость поперечная (ГСК)
-			])
+			const Mach = Vabs / atmoEnv.aSn
+			if( i % rarify === 0) {
+				result.push([
+					t,		// текущее время
+					Vabs,	// абсолютная скорость
+					ThLocal,// угол наклона траектории к местному горизонту
+					H,		// высота над уровнем планеты
+					L,		// пройденная дальность
+					m,		// текущая масса
+					nX,		// тангенциальное ускорение
+					nY,		// нормальное ускорение
+					dM,		// расход массы 
+					Mach,	// число M
+					Q,		// скоростной напор
+					X,		// продольная координата (ГСК)
+					Y,		// поперечная координата (ГСК)
+					Vx,		// скорость продольная (ГСК)
+					Vy		// скорость поперечная (ГСК)
+				])
+			}
 		}
 
 		return result 		

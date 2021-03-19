@@ -1,5 +1,5 @@
 {
-	"activeVariant": 0,
+	"activeVariant": 1,
 	"initialVars": [
 		{
 			"vehicle": "vehicle_1",
@@ -10,7 +10,18 @@
 				"H": 10
 			},
 			"dT": 0.1,
-			"description": "Экспериментальный планирующий ЛА с одноступенчатым ракетным ускорителем"
+			"description": "Test for rocket-powered ascent and gliding reentry"
+		},
+		{
+			"vehicle": "aeolus",
+			"planet": "Mars",
+			"launchConditions": {
+				"V": 7000,
+				"Th": -0.2165,
+				"H": 122000
+			},
+			"dT": 0.1,
+			"description": "Approximate model of AEOLUS Mars reentry vehicle"
 		}
-	]
+	]	
 }

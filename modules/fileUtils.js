@@ -21,6 +21,7 @@ const fileUtils = {
 				nX,		// тангенциальное ускорение
 				nY,		// нормальное ускорение
 				dM,		// расход массы 
+				Mach,	// число M
 				Q,		// скоростной напор
 				X,		// продольная координата (ГСК)
 				Y,		// поперечная координата (ГСК)
@@ -38,6 +39,7 @@ const fileUtils = {
 				nX.toFixed(2),
 				nY.toFixed(2),
 				dM.toFixed(2),
+				Mach.toFixed(1),
 				Q.toFixed(0),
 				X.toFixed(0),
 				Y.toFixed(0),
