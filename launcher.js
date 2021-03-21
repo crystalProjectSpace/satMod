@@ -31,12 +31,6 @@ getInitData('./model.json')
 
 		const {Vx, Vy, X, Y} = local2Global(launchConditions.V, launchConditions.H, launchConditions.Th)
 		
-		const fallDown = function(dataPoint) {
-			const {kinematics, t} = dataPoint
-			const totalH = Math.sqrt(kinematics[2] * kinematics[2] + kinematics[3] * kinematics[3])
-			return totalH < global.ENVIRO.RE
-		}
-		
 		const timeOut = function(dataPoint) {
 			const {t, kinematics} = dataPoint
 			const totalH = Math.sqrt(kinematics[2] * kinematics[2] + kinematics[3] * kinematics[3])
