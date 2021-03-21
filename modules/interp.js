@@ -121,6 +121,6 @@ class Interp_2D {
 }
 
 module.exports = {
-	Interp_1D: Interp_1D,
-	Interp_2D: Interp_2D,
+	Interp_1D,
+	Interp_2D,
 }

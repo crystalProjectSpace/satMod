@@ -1,5 +1,5 @@
 {
-	"activeVariant": 1,
+	"activeVariant": 2,
 	"initialVars": [
 		{
 			"vehicle": "vehicle_1",
@@ -22,6 +22,17 @@
 			},
 			"dT": 0.1,
 			"description": "Approximate model of AEOLUS Mars reentry vehicle"
+		},
+		{
+			"vehicle": "simple_sat",
+			"planet": "Earth",
+			"launchConditions": {
+				"V": 7788.14,
+				"Th": 0.00001,
+				"H": 200000
+			},
+			"dT": 0.1,
+			"description": "Model of sattelite with reentry capabilities"
 		}
 	]	
 }

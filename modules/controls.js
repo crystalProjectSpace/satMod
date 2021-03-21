@@ -2,6 +2,7 @@
 
 const {localHoryzonTh, totalHeight, absVelocity, globeRange} = require('./trajectoryUtils.js')
 const {KeplerObject} = require('./kepler.js')
+const {Interp_1D} = require('./interp.js')
 
 const genericControls = {
 	// шаблоны управления в канале тангажа
@@ -105,6 +106,18 @@ const genericControls = {
 					Math.max(alpha, -alphaMax) :
 					Math.min(alpha, alphaMax)
 			}
+		},
+		"diagram_alpha_t": function({
+			tau_val,
+			alpha_val
+		}) {
+			const interpolator = new Interp_1D()
+			interpolator.init(0, tau_val, alpha_val)
+
+			return function(stagePtr, kinematics, t) {
+				interpolator.checkX(t)
+				return interpolator.interp(t)
+			}
 		}		
 	},
 	// шаблоны управления расходом топлива
@@ -173,7 +186,9 @@ const genericControls = {
 		 */
 		"time_out": function({tauMax}) {
 			return function(stagePtr, kinematics, tau) {
-				return (stagePtr.tMECO !== 0) && (tau > stagePtr.tMECO + tauMax)
+				return stagePtr.mFuel > 0 ?
+					((stagePtr.tMECO !== 0) && (tau > stagePtr.tMECO + tauMax)) :
+					(tau > tauMax)
 			}
 		},
 		/**

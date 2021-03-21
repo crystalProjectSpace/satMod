@@ -30,7 +30,7 @@ const trajectoryUtils = {
 		} else {
 			return Y < 0 ?
 				global.ENVIRO.RE * (Math.PI + Math.atan(X/Y)) :
-				global.ENVIRO.RE * (2 * Math.PI - Math.atan(X/Y))
+				global.ENVIRO.RE * (2 * Math.PI + Math.atan(X/Y))
 		}
 		
 	},
