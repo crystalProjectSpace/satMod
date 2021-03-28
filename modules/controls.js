@@ -118,7 +118,45 @@ const genericControls = {
 				interpolator.checkX(t)
 				return interpolator.interp(t)
 			}
-		}		
+		},
+		/**
+		 * @description аэроторможение при входе с V > V_круговая * kCircle. Сначала удержание в атмосфере, затем переход на равновесное планирование
+		 * @param {Object} param0 параметры для формирования закона управления 
+		 * @returns {Function}
+		 */
+		"aerobrake": function({
+			alphaMax,
+			alphaInsert,
+			alphaGlide,
+			kThInsert,
+			kThGlide,
+			vFinal,
+			kCircle
+		}) {
+			return function(stagePtr, kinematics, t) {
+				const Vx = kinematics[0]
+				const Vy = kinematics[1]
+				const X = kinematics[2]
+				const Y = kinematics[3]
+				
+				const V = Math.sqrt(Vx * Vx + Vy * Vy)
+				const H = Math.sqrt(X * X + Y * Y)
+				const V_circle = global.ENVIRO.vCircular(H)
+				const Th = localHoryzonTh(Vx, Vy, X, Y)
+				
+				if(V > vFinal * kCircle) {
+					const alpha = (V > V_circle) ?
+					alphaInsert + kThInsert * Th :
+					alphaGlide + kThGlide * Th
+
+					return alpha > 0 ?
+						Math.min(alphaMax, alpha) :
+						Math.max(-alphaMax, alpha)
+				} else {
+					return 0
+				}
+			}
+		}			
 	},
 	// шаблоны управления расходом топлива
 	dM_functions: {
@@ -156,6 +194,47 @@ const genericControls = {
 				const MECO = (V >= global.ENVIRO.V_circular(H)) || (Math.abs(kinematics[4]/stagePtr.mDry - 1) < 1E-3)
 				
 				return (!MECO && tauApo >= tauFire) ? dM : 0
+			}
+		},
+		/**
+		 * @description торможение до заданной скорости
+		 */
+		"retro_rocket": function({
+			omegaMax,
+			hRetro,
+			vLand
+		}) {
+			let vRetro = 0
+
+			return function(stagePtr, kinematics, t) {
+				const X = kinematics[2]
+				const Y = kinematics[3]
+								
+				const Hglob = Math.sqrt(X * X + Y * Y)
+				const Hlocl = Hglob - global.ENVIRO.RE
+				
+				if(Hlocl > hRetro) {
+					return 0
+				} else {
+
+					const mCurrent = kinematics[4]
+					
+					if(mCurrent > stagePtr.mDry) {
+						const Vx = kinematics[0]
+						const Vy = kinematics[1]
+						const Vabs = Math.sqrt(Vx * Vx + Vy * Vy)
+						if(!vRetro) {
+							vRetro = Vabs
+						}
+
+						const dV = vLand - vRetro
+						
+						const omega = 0.75 * Math.abs((-9.81 + (vRetro * dV + 0.5 * dV * dV)/hRetro) * mCurrent / stagePtr.Jrel)
+						return Math.min(omega, omegaMax)
+					} else {
+						return 0 
+					}
+				}
 			}
 		}
 	},

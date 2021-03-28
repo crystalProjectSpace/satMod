@@ -1,5 +1,5 @@
 {
-	"activeVariant": 2,
+	"activeVariant": 3,
 	"initialVars": [
 		{
 			"vehicle": "vehicle_1",
@@ -33,6 +33,17 @@
 			},
 			"dT": 0.1,
 			"description": "Model of sattelite with reentry capabilities"
+		},
+		{
+			"vehicle": "apollo",
+			"planet": "Earth",
+			"launchConditions": {
+				"V": 10904,
+				"Th": -0.12094,
+				"H": 120000
+			},
+			"dT": 0.1,
+			"description": "Apollo-type capsule reentry vehicle"
 		}
 	]	
 }

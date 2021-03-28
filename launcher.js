@@ -19,7 +19,7 @@ getInitData('./model.json')
 			RE: R,
 			KE: K,
 			Atmo,
-			vCircular: H => Math.sqrt(KE / (R + H))
+			vCircular: H => Math.sqrt(K / H)
 		}
 		
 		return getInitData(vehicleDataPath)
@@ -34,7 +34,7 @@ getInitData('./model.json')
 		const timeOut = function(dataPoint) {
 			const {t, kinematics} = dataPoint
 			const totalH = Math.sqrt(kinematics[2] * kinematics[2] + kinematics[3] * kinematics[3])
-			return dataPoint.t > 5000 || totalH < global.ENVIRO.RE
+			return dataPoint.t > 950 || totalH < global.ENVIRO.RE
 		}
 		
 		const controlFunctions = setupControls(alpha_controls, fuel_controls, stage_controls)
@@ -45,7 +45,7 @@ getInitData('./model.json')
 
 		const testTrajectory = testVehicle.calcTrajectory(timeOut, [Vx, Vy, X, Y], dT)
 		
-		const analyzedTrajectory = analyzeTrajectory(testTrajectory, 10)
+		const analyzedTrajectory = analyzeTrajectory(testTrajectory, 5)
 
 		trj2CSV(analyzedTrajectory, 'test_trajectory')
 	})	
