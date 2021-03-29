@@ -1,22 +1,26 @@
 'use strict'
 
+const Vector = require('./vectorOps.js')
+
 const trajectoryUtils = {
 	/**
 	* @description угол наклона к местному горизонту 
 	* @return {Number}
 	*/
-	localHoryzonTh: function(Vx, Vy, X, Y) {
-		const absV2 = Vx * Vx + Vy * Vy
-		const absR2 = X * X + Y * Y
-		
-		return Math.acos((Vx * Y - Vy * X)/Math.sqrt(absV2 * absR2)) * Math.sign(Vy * Y + Vx * X)
+	localHoryzonTh: function(Vx, Vy, Vz, X, Y, Z) {
+		const coord = [X, Y, Z]
+		const dV = [X + Vx, Y + Vy, Z + Vz]
+		const localHoryzon = Vector.tangentPlane(coord)
+		const vh_local = Vector.point2plane(dV, localHoryzon)
+
+		return Vector.angleBetween(Vector.vect(vh_local, coord), [Vx, Vy, Vz])
 	},
 	/**
 	* @description высота над поверхостью планеты
 	* @return {Number}
 	*/
-	totalHeight: function(X, Y) {
-		return Math.sqrt(X * X + Y * Y) - global.ENVIRO.RE
+	totalHeight: function(X, Y, Z) {
+		return Math.sqrt(X * X + Y * Y + Z * Z) - global.ENVIRO.RE
 	},
 	/**
 	* @description дальность полета в проекции на поверхность планеты
@@ -38,8 +42,8 @@ const trajectoryUtils = {
 	* @description модуль значения скорости
 	* @return {Number}
 	*/
-	absVelocity: function(Vx, Vy) {
-		return Math.sqrt(Vx * Vx + Vy * Vy)
+	absVelocity: function(Vx, Vy, Vz) {
+		return Math.sqrt(Vx * Vx + Vy * Vy + Vz * Vz)
 	},
 	/**
 	* @description Перевод от абсолютной скорости, высоты и угла наклона траектории к глобальным координатам положения и компонентам вектора скорости

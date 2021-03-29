@@ -37,7 +37,12 @@ class CompositeVehicle {
 		this.stages = stageData.map((stage, i) => {
 			const result = new VehicleStage()
 			const {massGeometry, ADX} = stage
-			const {alphaControls, fuelControls, cutOffControls} = stageControls[i]
+			const {
+				alphaControls,
+				gammaControls,
+				fuelControls,
+				cutOffControls
+			} = stageControls[i]
 			
 			result.init(
 				massGeometry.mFuel,
@@ -51,6 +56,7 @@ class CompositeVehicle {
 			)
 			
 			result.setupPitchControl(alphaControls)
+			result.setupRollControl(gammaControls)
 			result.setupFuelControl(fuelControls)
 			result.setupStageControl(cutOffControls)
 			
@@ -60,15 +66,15 @@ class CompositeVehicle {
 	/**
 	* @description Задать кинематические параметры для ступени в момент ее включения
 	*/
-	setupStageKinematics(Vx, Vy, X, Y) {
-		this.stages[this.currentStage].getKinematics(Vx, Vy, X, Y)
+	setupStageKinematics(Vx, Vy, Vz, X, Y, Z) {
+		this.stages[this.currentStage].getKinematics(Vx, Vy, Vz, X, Y, Z)
 	}
 	/**
 	* @description Разделение ступеней
 	*/
-	changeStage(Vx, Vy, X, Y) {
+	changeStage(Vx, Vy, Vz, X, Y, Z) {
 		this.currentStage++
-		this.setupStageKinematics(Vx, Vy, X, Y)
+		this.setupStageKinematics(Vx, Vy, Vz, X, Y, Z)
 	}
 	/**
 	* @description Сквозной расчет всей траектории с учетом разделения ступеней
@@ -81,7 +87,15 @@ class CompositeVehicle {
 		let tau = 0
 		let globalResult = []
 		const conditions = {t: tau, kinemtics: startConditions}
-		this.setupStageKinematics(startConditions[0], startConditions[1], startConditions[2], startConditions[3])
+		this.setupStageKinematics(
+			startConditions[0],
+			startConditions[1],
+			startConditions[2],
+			startConditions[3],
+			startConditions[4],
+			startConditions[5],
+			startConditions[6]
+		)
 		const timeStart = performance.now()
 		
 		console.log('Trajectory calculation started\n')
@@ -102,10 +116,12 @@ class CompositeVehicle {
 				
 				const Vx = lastPoint[0]
 				const Vy = lastPoint[1]
-				const X = lastPoint[2]
-				const Y = lastPoint[3]
+				const Vz = lastPoint[2]
+				const X = lastPoint[3]
+				const Y = lastPoint[4]
+				const Z = lastPoint[5]
 				
-				this.changeStage(Vx, Vy, X, Y)
+				this.changeStage(Vx, Vy, Vz, X, Y, Z)
 				
 				console.log(`t: ${tau}; stage ${i} activated`)
 			} else {

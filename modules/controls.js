@@ -158,6 +158,14 @@ const genericControls = {
 			}
 		}			
 	},
+	// шаблоны функций управления по крену
+	Roll_functions: {
+		"no_roll": function() {
+			return function({stagePtr, kinematics, t}) {
+				return 0
+			}
+		}
+	},
 	// шаблоны управления расходом топлива
 	dM_functions: {
 		/**
@@ -292,11 +300,12 @@ const genericControls = {
 	/**
 	* @description Сформировать функции управления ступенями на основе ИД из json
 	* @param {Array.<{type: String, prms: Object}>} alpha_controls ИД по законам управления в канале тангажа
+	* @param {Array.<{type: String, prms: Object}>} roll_controls ИД по законам управления в канале крена
 	* @param {Array.<{type: String, prms: Object}>} fuel_controls ИД по расходам топлива
 	* @param {Array.<{type: String, prms: Object}>} stage_controls ИД по законам разделения ступеней
 	* @return {Array.<{alphaControls: Function, fuelControls: Function, stageControls: Function}>}
 	*/
-	setupControls: function(alpha_controls, fuel_controls, stage_controls) {
+	setupControls: function(alpha_controls, fuel_controls, roll_controls, stage_controls) {
 		const nStage = alpha_controls.length
 		
 		const result = []
@@ -304,6 +313,8 @@ const genericControls = {
 		for(let i = 0; i < nStage; i++) {
 			const alphaType = alpha_controls[i].type
 			const alphaPrms = alpha_controls[i].prms
+			const gammaType = roll_controls[i].type
+			const gammaPrms = roll_controls[i].prms
 			const dmType = fuel_controls[i].type
 			const dmPrms = fuel_controls[i].prms
 			const stageType = stage_controls[i].type
@@ -311,6 +322,7 @@ const genericControls = {
 
 			result.push({
 				alphaControls: genericControls.AOA_functions[alphaType](alphaPrms),
+				gammaControls: genericControls.Roll_functions[gammaType](gammaPrms),
 				fuelControls: genericControls.dM_functions[dmType](dmPrms),
 				cutOffControls: genericControls.stage_functions[stageType](stagePrms)
 			})

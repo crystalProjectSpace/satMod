@@ -73,6 +73,16 @@
 			}
 		}
 	],
+	"roll_controls": [
+		{
+			"type": "no_roll",
+			"prms": {}
+		},
+		{
+			"type": "no_roll",
+			"prms": {}
+		}
+	],
 	"fuel_controls": [
 		{
 			"type": "dm_nodrain",
