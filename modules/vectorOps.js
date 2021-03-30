@@ -1,6 +1,7 @@
 'use strict'
 
-Vector = {
+const Vector = {
+    NORTH: [0, 1E20, 0],
     /**
      *  @description модуль вектора 
      */
@@ -71,11 +72,16 @@ Vector = {
             ]
         }
     },
+    norm2line: function(U, L) {
+        const t = Vector.dotProduct(Vector.vectSubt(L.point, U), L.direct) / Vector.dotProduct(L.direct, L.direct)
+
+        return Vector.vectSumm(L.point, Vector.vectByScal(L.direct, t))
+    },
     /**
     * @description плоскость местного горизонта
     */
     tangentPlane: function(U) {
-        const absU = absV(U)
+        const absU = Vector.absV(U)
 
         return {
             point: [U[0], U[1], U[2]],
@@ -121,7 +127,7 @@ Vector = {
     * @description  сферические координаты -> декартовы
     */
     sphere2decart: function(W, L, H) {
-        const cw = Math.cos(w)
+        const cw = Math.cos(W)
         
         return [		
             H * cw * Math.sin(L),
@@ -133,7 +139,13 @@ Vector = {
     * @description  сферические координаты -> декартовы
     */
     azimuth: function(V, crd) {
+        const localHoryzon = Vector.tangentPlane(crd)
+        const localNorth = Vector.point2plane(Vector.NORTH, localHoryzon)
+        const vHoryzon = Vector.point2plane(V, localHoryzon)
 
+        console.log(Vector.crossProduct(Vector.vectSubt(vHoryzon, crd), Vector.vectSubt(localNorth, crd)))
+
+        return Vector.angleBetween(Vector.vectSubt(vHoryzon, crd), Vector.vectSubt(localNorth, crd))
     }
 }
 

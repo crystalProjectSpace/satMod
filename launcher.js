@@ -1,6 +1,6 @@
 const {getInitData, trj2CSV} = require('./modules/fileUtils.js')
 //===========================================================
-getInitData('./model.json')
+/*getInitData('./model.json')
 .then( modelConfig => {
 	const {activeVariant, initialVars} = modelConfig
 	const {vehicle, planet, launchConditions, dT} = initialVars[activeVariant]
@@ -49,4 +49,23 @@ getInitData('./model.json')
 
 		trj2CSV(analyzedTrajectory, 'test_trajectory')
 	})	
-})
+})*/
+
+const Vector = require('./modules/vectorOps.js')
+const W = 0.1
+const L = 1
+const H = 5E+3
+
+const Th = 23
+const Psi = -40
+
+const V = [
+	7000 * Math.cos(Th/57.3) * Math.sin(Psi/57.3),
+	7000 * Math.cos(Th/57.3) * Math.cos(Psi/57.3),
+	7000 * Math.sin(Th/57.3),
+]
+
+const testPoint = Vector.sphere2decart(W/57.3, L/57.3, 6.3711E+6 + H)
+
+const fi = Vector.azimuth(V, testPoint)
+console.log(fi * 57.3)
