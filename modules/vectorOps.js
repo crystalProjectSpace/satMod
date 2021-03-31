@@ -143,9 +143,20 @@ const Vector = {
         const localNorth = Vector.point2plane(Vector.NORTH, localHoryzon)
         const vHoryzon = Vector.point2plane(V, localHoryzon)
 
-        console.log(Vector.crossProduct(Vector.vectSubt(vHoryzon, crd), Vector.vectSubt(localNorth, crd)))
-
         return Vector.angleBetween(Vector.vectSubt(vHoryzon, crd), Vector.vectSubt(localNorth, crd))
+    },
+    /**
+     * @description Умножить матрицу на вектор
+     * @param {Array.<Array.<Number>>} M - матрица
+     * @param {Array.<Number>} U - вектор
+     * @returns {Array.<Number>}
+     */
+    vect2matrix: function(M, U) {
+        return [
+            M[0][0] * U[0] + M[0][1] * U[1] + M[0][2] * U[2],
+            M[1][0] * U[0] + M[1][1] * U[1] + M[1][2] * U[2],
+            M[2][0] * U[0] + M[2][1] * U[1] + M[2][2] * U[2]
+        ]
     }
 }
 

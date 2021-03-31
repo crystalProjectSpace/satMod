@@ -51,21 +51,19 @@ const {getInitData, trj2CSV} = require('./modules/fileUtils.js')
 	})	
 })*/
 
+global.ENVIRO = { RE: 6.3711E+6 }
+
 const Vector = require('./modules/vectorOps.js')
-const W = 0.1
-const L = 1
+const trajectoryUtils = require('./modules/trajectoryUtils.js')
+
+const W = 45
+const L = 285
 const H = 5E+3
 
-const Th = 23
-const Psi = -40
+const Th = 20
+const Psi = 0 
 
-const V = [
-	7000 * Math.cos(Th/57.3) * Math.sin(Psi/57.3),
-	7000 * Math.cos(Th/57.3) * Math.cos(Psi/57.3),
-	7000 * Math.sin(Th/57.3),
-]
-
-const testPoint = Vector.sphere2decart(W/57.3, L/57.3, 6.3711E+6 + H)
-
-const fi = Vector.azimuth(V, testPoint)
-console.log(fi * 57.3)
+const test_1 = trajectoryUtils.local2Global(7000, 1E+5, Th/57.3, Psi/57.3, W/57.3, L/57.3)
+const {Vx, Vy, Vz, X, Y, Z} = test_1
+const test_2 = trajectoryUtils.localHoryzonTh(Vx, Vy, Vz, X, Y, Z)
+console.log(test_2 * 57.3)

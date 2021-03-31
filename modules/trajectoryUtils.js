@@ -9,11 +9,10 @@ const trajectoryUtils = {
 	*/
 	localHoryzonTh: function(Vx, Vy, Vz, X, Y, Z) {
 		const coord = [X, Y, Z]
-		const dV = [X + Vx, Y + Vy, Z + Vz]
 		const localHoryzon = Vector.tangentPlane(coord)
-		const vh_local = Vector.point2plane(dV, localHoryzon)
+		const vProject = Vector.point2plane([Vx, Vy, Vz], localHoryzon)
 
-		return Vector.angleBetween(Vector.vect(vh_local, coord), [Vx, Vy, Vz])
+		return Vector.angleBetween(Vector.vectSubt(vProject, [X, Y, Z]), [Vx, Vy, Vz])
 	},
 	/**
 	* @description высота над поверхостью планеты
@@ -21,22 +20,6 @@ const trajectoryUtils = {
 	*/
 	totalHeight: function(X, Y, Z) {
 		return Math.sqrt(X * X + Y * Y + Z * Z) - global.ENVIRO.RE
-	},
-	/**
-	* @description дальность полета в проекции на поверхность планеты
-	* @return {Number}
-	*/
-	globeRange: function(X, Y) {
-		if(X > 0) {
-			return Y > 0 ?
-				global.ENVIRO.RE * Math.atan(X/Y) :
-				global.ENVIRO.RE * (Math.PI + Math.atan(X/Y))
-		} else {
-			return Y < 0 ?
-				global.ENVIRO.RE * (Math.PI + Math.atan(X/Y)) :
-				global.ENVIRO.RE * (2 * Math.PI + Math.atan(X/Y))
-		}
-		
 	},
 	/**
 	* @description модуль значения скорости
@@ -50,31 +33,51 @@ const trajectoryUtils = {
 	* @param {Number} V абсолютная скорость 
 	* @param {Number} H высота над поверхностью планеты
 	* @param {Number} Th угол наклона отн.местного горизонта
-	* @param {Number}[L = 0] L пройденная дальность в проекции на поверхность, по умолчанию - нуль
-	* @return {{Vx:Number, Vy:Number, X:Number, Y:Number}}
+	* @param {Number} Psi текущий курсовой угол
+	* @param {Number} W стартовая широта
+	* @param {Number} L стартовая долгота
+	* @return {{Vx:Number, Vy:Number, Vz:Number, X:Number, Y:Number, Z:Number}}
 	*/
-	local2Global: function(V, H, Th, L = 0) {
-		const H1 = H + global.ENVIRO.RE
-		const Betha = L / global.ENVIRO.RE
-		
-		const CB = Math.cos(Betha)
-		const SB = Math.sin(Betha)
-		
-		const X = H1 * SB
-		const Y = H1 * CB
-		
+	local2Global: function(V, H, Th, Psi, W, L) {
+		const [X, Y, Z] = Vector.sphere2decart(W, L, global.ENVIRO.RE + H)
+
 		const CTH = Math.cos(Th)
+		const CPS = Math.cos(Psi)
 		const STH = Math.sin(Th)
-		const localHoryzon = [CB, -SB]
-		
-		const Vx = (localHoryzon[0] * CTH - localHoryzon[1] * STH) * V
-		const Vy = (localHoryzon[0] * STH + localHoryzon[1] * CTH) * V
-		
+		const SPS = Math.sin(Psi)
+
+		const _W = W > 0 ? 0.5 * Math.PI - W : -0.5 * Math.PI - W
+
+		const CW = Math.cos(_W)
+		const CL = Math.cos(L)
+		const SW = Math.sin(_W)
+		const SL = Math.sin(L)
+
+		const rotationW = [
+			[1,		0,		0],
+			[0,		CW,		-SW],
+			[0,		SW,		CW]
+		]
+
+		const rotationL = [
+			[CL,	0,		SL],
+			[0,		1,		0],
+			[-SL,	0,		CL]
+		]
+
+		const vLocal = Vector.vectByScal([CTH * CPS, STH, CTH * SPS], V)
+
+		const V_w = Vector.vect2matrix(rotationW, vLocal)
+
+		const [Vx, Vy, Vz] = Vector.vect2matrix(rotationL, V_w)
+
 		return {
 			Vx,
 			Vy,
+			Vz,
 			X,
-			Y
+			Y,
+			Z
 		}
 	},
 	/**
