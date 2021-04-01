@@ -56,14 +56,18 @@ global.ENVIRO = { RE: 6.3711E+6 }
 const Vector = require('./modules/vectorOps.js')
 const trajectoryUtils = require('./modules/trajectoryUtils.js')
 
-const W = 45
-const L = 285
+const W = -88.5
+
 const H = 5E+3
 
 const Th = 20
 const Psi = 0 
 
-const test_1 = trajectoryUtils.local2Global(7000, 1E+5, Th/57.3, Psi/57.3, W/57.3, L/57.3)
-const {Vx, Vy, Vz, X, Y, Z} = test_1
-const test_2 = trajectoryUtils.localHoryzonTh(Vx, Vy, Vz, X, Y, Z)
-console.log(test_2 * 57.3)
+for(let i = 0; i < 73; i++) {
+	const L = i * 5
+	const test_1 = trajectoryUtils.local2Global(7000, H, Th/57.3, Psi/57.3, W/57.3, L/57.3)
+	const {Vx, Vy, Vz, X, Y, Z} = test_1
+
+	const test_2 = trajectoryUtils.localHoryzonTh(Vx, Vy, Vz, X, Y, Z)
+	console.log(L, test_2 * 57.3)
+}

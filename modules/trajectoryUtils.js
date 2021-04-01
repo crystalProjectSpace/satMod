@@ -9,10 +9,11 @@ const trajectoryUtils = {
 	*/
 	localHoryzonTh: function(Vx, Vy, Vz, X, Y, Z) {
 		const coord = [X, Y, Z]
+		const V = [Vx, Vy, Vz]
 		const localHoryzon = Vector.tangentPlane(coord)
-		const vProject = Vector.point2plane([Vx, Vy, Vz], localHoryzon)
+ 		const vProject = Vector.vectSubt(Vector.point2plane(V, localHoryzon), coord)
 
-		return Vector.angleBetween(Vector.vectSubt(vProject, [X, Y, Z]), [Vx, Vy, Vz])
+		return Vector.angleBetween(V, vProject)
 	},
 	/**
 	* @description высота над поверхостью планеты
@@ -41,9 +42,9 @@ const trajectoryUtils = {
 	local2Global: function(V, H, Th, Psi, W, L) {
 		const [X, Y, Z] = Vector.sphere2decart(W, L, global.ENVIRO.RE + H)
 
-		const CTH = Math.cos(Th)
+		const CTH = Math.cos(Th * Math.sign(W))
 		const CPS = Math.cos(Psi)
-		const STH = Math.sin(Th)
+		const STH = Math.sin(Th * Math.sign(W))
 		const SPS = Math.sin(Psi)
 
 		const _W = W > 0 ? 0.5 * Math.PI - W : -0.5 * Math.PI - W

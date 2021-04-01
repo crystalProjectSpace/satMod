@@ -96,7 +96,9 @@ const Vector = {
     * @description модуль угла между двумя векторами
     */
     angleBetween: function(U, V) {
-        return Math.acos( Vector.dotProduct(U, V) / (Vector.absV(U) * Vector.absV(V)))
+        const cross = Vector.crossProduct(U, V)
+		const sign = Math.sign(Vector.dotProduct([0, 1, 0], cross))
+		return sign * Math.atan(Vector.absV(cross)/Vector.dotProduct(U, V))
     },
     /**
     * @description спроецировать точку на плоскость
