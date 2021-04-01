@@ -109,12 +109,11 @@ const trajectoryUtils = {
 
 		for(let i = 0; i < nTrajectory; i++) {
 			const {t, kinematics} = rawTrajectory[i]
-			const [Vx, Vy, X, Y, m] = kinematics
-			const Vabs = absVelocity(Vx, Vy)
+			const [Vx, Vy, Vz, X, Y, Z, m] = kinematics
+			const Vabs = absVelocity(Vx, Vy, Vz)
 			const V2 = Vabs * Vabs
-			const ThLocal = localHoryzonTh(Vx, Vy, X, Y)
-			const H = totalHeight(X, Y)
-			const L = globeRange(X, Y)
+			const ThLocal = localHoryzonTh(Vx, Vy, Vz, X, Y, Z)
+			const H = totalHeight(X, Y, Z)
 
 			const hTotal = H + RE
 			const g = KE / (hTotal * hTotal)

@@ -40,7 +40,10 @@
 			"launchConditions": {
 				"V": 10904,
 				"Th": -0.12094,
-				"H": 120000
+				"Psi": 0,
+				"H": 120000,
+				"W": 15,
+				"L": 5
 			},
 			"dT": 0.1,
 			"description": "Apollo-type capsule reentry vehicle"
