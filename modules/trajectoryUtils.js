@@ -1,7 +1,7 @@
 'use strict'
 
 const {
-	tangentPlane, vectSubt, point2plane, angleBetween, sphere2decart,
+	angleBetween, sphere2decart,
 	vectByScal, vect2matrix, decart2sphere, sphereDelta, azimuth
 } = require('./vectorOps.js')
 
@@ -102,6 +102,7 @@ const trajectoryUtils = {
 		let L_1 = 0
 		let Fi_0 = 0
 		let Fi_1 = 0
+		let L = 0
 		const dT = rawTrajectory[1].t - rawTrajectory[0].t
 		
 		const result = []
@@ -122,7 +123,6 @@ const trajectoryUtils = {
 			let nX = 0
 			let nY = 0
 			let nZ = 0
-			let L = 0
 			let dM = 0
 			
 			if(i > 0) {
@@ -133,7 +133,7 @@ const trajectoryUtils = {
 				Fi_0 = Fi_1
 				Fi_1 = azimuth([Vx, Vy, Vz], [X, Y, Z])
 
-				L += RE * Math.abs(sphereDelta(W_0, L_0, W_1, L_1))
+				L += (RE * Math.abs(sphereDelta(W_0, L_0, W_1, L_1)))
 
 				V_0 = V_1
 				Th_0 = Th_1
@@ -143,7 +143,7 @@ const trajectoryUtils = {
 				const V_av = 0.5 * (V_1 + V_0)
 				nX = ((V_1 - V_0) / dT) + g * Math.sin(Th_av)
 				nY = (V_av * (Th_1 - Th_0) / dT) + g * Math.cos(Th_av) - (V2 / hTotal) // учитываем центробежную разгрузку при определении Ny
-				nZ = (V_av * (Fi_1 - Fi_0) / dT)
+				nZ = 0
 				M0 = M1
 				M1 = m
 				

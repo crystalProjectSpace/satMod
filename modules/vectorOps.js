@@ -137,11 +137,11 @@ const Vector = {
         const CW1 = Math.cos(W1)
         const CL1 = Math.cos(L1)
         const SW1 = Math.sin(W1)
-        const SL1 = Math.sin(W1)
+        const SL1 = Math.sin(L1)
         const CW2 = Math.cos(W2)
         const CL2 = Math.cos(L2)
         const SW2 = Math.sin(W2)
-        const SL2 = Math.sin(W2)
+        const SL2 = Math.sin(L2)
         
         return Vector.angleBetween(
             [CW1 * SL1, SW1, CW1 * CL1],

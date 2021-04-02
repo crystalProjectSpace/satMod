@@ -111,11 +111,6 @@ class VehicleStage {
 		const radVectAbs = Math.sqrt(radVect2)
 		const radVect3 = radVect2 * radVectAbs
 		const Vabs = Math.sqrt(V2)
-		const ThLocal = localHoryzonTh(Vx, Vy, Vz, X, Y, Z)
-
-		const CTH = Math.cos(ThLocal)
-		const STH = Math.sin(ThLocal)
-
 		const H = radVectAbs - global.ENVIRO.RE
 		const atmoEnv = global.ENVIRO.Atmo.getAtmo(H)
 		const Mach = Vabs / atmoEnv.aSn
@@ -135,7 +130,7 @@ class VehicleStage {
 		const X_y = Vy / Vabs
 		const X_z = Vz / Vabs
 
-		const zLocal = crossProduct([X_x, X_y, X_z], [X, Y, Y])
+		const zLocal = crossProduct([X_x, X_y, X_z], [X, Y, Z])
 		const zLocalN = vectByScal(zLocal, 1 / absV(zLocal) )
 
 		const [Y_x, Y_y, Y_z] = vect2matrix(arbitRotation(zLocalN, Math.PI * 0.5), [X_x, X_y, X_z])
