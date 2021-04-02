@@ -1,6 +1,9 @@
 'use strict'
 
-const Vector = require('./vectorOps.js')
+const {
+	tangentPlane, vectSubt, point2plane, angleBetween, sphere2decart,
+	vectByScal, vect2matrix, decart2sphere, sphereDelta, azimuth
+} = require('./vectorOps.js')
 
 const trajectoryUtils = {
 	/**
@@ -10,10 +13,12 @@ const trajectoryUtils = {
 	localHoryzonTh: function(Vx, Vy, Vz, X, Y, Z) {
 		const coord = [X, Y, Z]
 		const V = [Vx, Vy, Vz]
-		const localHoryzon = Vector.tangentPlane(coord)
- 		const vProject = Vector.vectSubt(Vector.point2plane(V, localHoryzon), coord)
 
-		return Vector.angleBetween(V, vProject)
+		const Th = -0.5 * Math.PI + angleBetween(V, coord)
+
+		const signTh = Math.sign(Th)
+		const ThAbs = Math.abs(Th)
+		return ThAbs < 0.5 * Math.PI ? Th : signTh * (ThAbs - Math.PI) 
 	},
 	/**
 	* @description высота над поверхостью планеты
@@ -40,7 +45,7 @@ const trajectoryUtils = {
 	* @return {{Vx:Number, Vy:Number, Vz:Number, X:Number, Y:Number, Z:Number}}
 	*/
 	local2Global: function(V, H, Th, Psi, W, L) {
-		const [X, Y, Z] = Vector.sphere2decart(W, L, global.ENVIRO.RE + H)
+		const [X, Y, Z] = sphere2decart(W, L, global.ENVIRO.RE + H)
 
 		const CTH = Math.cos(Th * Math.sign(W))
 		const CPS = Math.cos(Psi)
@@ -54,23 +59,14 @@ const trajectoryUtils = {
 		const SW = Math.sin(_W)
 		const SL = Math.sin(L)
 
-		const rotationW = [
-			[1,		0,		0],
-			[0,		CW,		-SW],
-			[0,		SW,		CW]
-		]
-
-		const rotationL = [
-			[CL,	0,		SL],
-			[0,		1,		0],
-			[-SL,	0,		CL]
-		]
-
-		const vLocal = Vector.vectByScal([CTH * CPS, STH, CTH * SPS], V)
-
-		const V_w = Vector.vect2matrix(rotationW, vLocal)
-
-		const [Vx, Vy, Vz] = Vector.vect2matrix(rotationL, V_w)
+		const [Vx, Vy, Vz] = vect2matrix(
+			[
+				[CL,	SL*SW,	SL*CW],
+				[0,		CW,		-SW],
+				[-SL,	CL*SW,	CL*CW]
+			],
+			vectByScal([CTH * CPS, STH, CTH * SPS], V)
+		)
 
 		return {
 			Vx,
@@ -91,8 +87,7 @@ const trajectoryUtils = {
 		const {
 			absVelocity,
 			localHoryzonTh,
-			totalHeight,
-			globeRange
+			totalHeight
 		} = trajectoryUtils
 		
 		let V_0 = 0
@@ -101,6 +96,12 @@ const trajectoryUtils = {
 		let Th_1 = 0
 		let M0 = 0
 		let M1 = 0
+		let W_0 = 0
+		let W_1 = 0
+		let L_0 = 0
+		let L_1 = 0
+		let Fi_0 = 0
+		let Fi_1 = 0
 		const dT = rawTrajectory[1].t - rawTrajectory[0].t
 		
 		const result = []
@@ -114,15 +115,26 @@ const trajectoryUtils = {
 			const V2 = Vabs * Vabs
 			const ThLocal = localHoryzonTh(Vx, Vy, Vz, X, Y, Z)
 			const H = totalHeight(X, Y, Z)
-
 			const hTotal = H + RE
 			const g = KE / (hTotal * hTotal)
+			const spherCor = decart2sphere([X, Y, Z])
 
 			let nX = 0
 			let nY = 0
+			let nZ = 0
+			let L = 0
 			let dM = 0
 			
-			if(i > 0) {				
+			if(i > 0) {
+				W_0 = W_1
+				L_0 = L_1
+				W_1 = spherCor.W
+				L_1 = spherCor.L
+				Fi_0 = Fi_1
+				Fi_1 = azimuth([Vx, Vy, Vz], [X, Y, Z])
+
+				L += RE * Math.abs(sphereDelta(W_0, L_0, W_1, L_1))
+
 				V_0 = V_1
 				Th_0 = Th_1
 				V_1 = Vabs
@@ -131,7 +143,7 @@ const trajectoryUtils = {
 				const V_av = 0.5 * (V_1 + V_0)
 				nX = ((V_1 - V_0) / dT) + g * Math.sin(Th_av)
 				nY = (V_av * (Th_1 - Th_0) / dT) + g * Math.cos(Th_av) - (V2 / hTotal) // учитываем центробежную разгрузку при определении Ny
-				
+				nZ = (V_av * (Fi_1 - Fi_0) / dT)
 				M0 = M1
 				M1 = m
 				
@@ -139,7 +151,9 @@ const trajectoryUtils = {
 			} else {
 				V_1 = Vabs
 				Th_1 = ThLocal
-				
+				W_1 = spherCor.W
+				L_1 = spherCor.L
+				Fi_1 = azimuth([Vx, Vy, Vz], [X, Y, Z])
 				M1 = m
 			}
 			i === 0 ? Atmo.setupIndex(H) : Atmo.checkIndex(H)
@@ -152,18 +166,24 @@ const trajectoryUtils = {
 					t,		// текущее время
 					Vabs,	// абсолютная скорость
 					ThLocal,// угол наклона траектории к местному горизонту
+					Fi_1,	// азимут траектории
 					H,		// высота над уровнем планеты
 					L,		// пройденная дальность
 					m,		// текущая масса
 					nX,		// тангенциальное ускорение
-					nY,		// нормальное ускорение
+					nY,		// вертикальное ускорение
+					nZ,		// боковое ускорение
 					dM,		// расход массы 
 					Mach,	// число M
 					Q,		// скоростной напор
+					W_1,	// широта
+					L_1,	// долгота
 					X,		// продольная координата (ГСК)
-					Y,		// поперечная координата (ГСК)
+					Y,		// вертикальная координата (ГСК)
+					Z,		// поперечная
 					Vx,		// скорость продольная (ГСК)
-					Vy		// скорость поперечная (ГСК)
+					Vy,		// скорость вертикальная (ГСК)
+					Vz		// скорость поперечная
 				])
 			}
 		}

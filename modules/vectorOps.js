@@ -115,15 +115,38 @@ const Vector = {
     * @description декартовы координаты -> сферические
     */
     decart2sphere :function(U) {
-        const rad = Vector.absVect(U)
+        const rad = Vector.absV(U)
         const rad_planar = Math.sqrt(U[0] * U[0] + U[2] * U[2])
         const W = Math.asin(U[1] / rad)
-        const W0 = Math.asin(U[0] / rad_planar)
+        const L0 = Math.asin(U[0] / rad_planar)
         const L = (U[0] > 0) ?
-            (U[2] > 0 ? W0 : Math.PI - W0) :
-            (U[2] < 0 ? 1.5 * Math.PI + W0 : 2 * Math.PI + W0) 
+            (U[2] > 0 ? L0 : Math.PI - L0) :
+            (U[2] < 0 ? 1.5 * Math.PI + L0 : 2 * Math.PI + L0) 
             
         return {W, L}
+    },
+    /**
+     * @description определить угол на поверхности сферы между двумя точками
+     * @param {Number} W1 широта точки 1
+     * @param {Number} L1 долгота точки 1
+     * @param {Number} W1 широта точки 2
+     * @param {Number} L1 долгота точки 2
+     * @return {Number}
+     */
+    sphereDelta: function(W1, L1, W2, L2) {
+        const CW1 = Math.cos(W1)
+        const CL1 = Math.cos(L1)
+        const SW1 = Math.sin(W1)
+        const SL1 = Math.sin(W1)
+        const CW2 = Math.cos(W2)
+        const CL2 = Math.cos(L2)
+        const SW2 = Math.sin(W2)
+        const SL2 = Math.sin(W2)
+        
+        return Vector.angleBetween(
+            [CW1 * SL1, SW1, CW1 * CL1],
+            [CW2 * SL2, SW2, CW2 * CL2]
+        )
     },
     /**
     * @description  сферические координаты -> декартовы
@@ -158,6 +181,29 @@ const Vector = {
             M[0][0] * U[0] + M[0][1] * U[1] + M[0][2] * U[2],
             M[1][0] * U[0] + M[1][1] * U[1] + M[1][2] * U[2],
             M[2][0] * U[0] + M[2][1] * U[1] + M[2][2] * U[2]
+        ]
+    },
+    /**
+     * @description Матрица поворота на произвольный угол вокруг произвольный оси
+     * @param {Array.<Number>} U - единичный вектор оси разворота
+     * @param {Number} Th угол разворота
+     * @returns {Array.<Number>}
+     */
+    arbitRotation: function(U, Th) {
+        const CTH = Math.cos(Th)
+        const STH = Math.sin(Th)
+        const _CTH = 1 - CTH
+        const XY = U[0] * U[1]
+        const XZ = U[0] * U[2]
+        const YZ = U[1] * U[2]
+        const XX = U[0] * U[0]
+        const YY = U[1] * U[1]
+        const ZZ = U[2] * U[2]
+
+        return [
+            [CTH + XX * _CTH,       XY * _CTH - U[2]*STH,   XZ * _CTH + U[1]*STH],
+            [XY * _CTH + U[2]*STH,  CTH + YY * _CTH,        YZ * _CTH - U[0] * STH],
+            [XZ * _CTH - U[1]*STH,  YZ * _CTH + U[0] * STH, CTH + ZZ * _CTH]
         ]
     }
 }

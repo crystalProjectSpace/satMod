@@ -1,8 +1,8 @@
 'use strict'
 
 const {Interp_2D} = require('./interp.js')				// функции табличной интерполяции
-const {totalHeight} = require('./trajectoryUtils.js')	// вычисление высоты из абс.координат
-
+const {totalHeight, localHoryzonTh} = require('./trajectoryUtils.js')	// вычисление высоты из абс.координат
+const { absV, crossProduct, vectByScal, vect2matrix, arbitRotation } = require('./vectorOps.js')
 class VehicleStage {
 	/**
 	* @description описание ступени многоступенчатой РКН
@@ -104,18 +104,18 @@ class VehicleStage {
 		if(dFuel === 0 && !this.tMECO) {
 			this.tMECO = t
 		}
-		const Vx2 = Vx * Vx
-		const Vz2 = Vz * Vz
-		const V2 = Vx2 + Vy * Vy + Vz2
-		const V_xz = Math.sqrt(Vx2 + Vz2)
+
+		const V2 = Vx*Vx + Vy * Vy + Vz*Vz
+
 		const radVect2 = X * X + Y * Y + Z * Z
 		const radVectAbs = Math.sqrt(radVect2)
 		const radVect3 = radVect2 * radVectAbs
 		const Vabs = Math.sqrt(V2)
-		const CTH = V_xz / Vabs
-		const STH = Vy / Vabs
-		const CPS = Vx / V_xz
-		const SPS = Vz / V_xz
+		const ThLocal = localHoryzonTh(Vx, Vy, Vz, X, Y, Z)
+
+		const CTH = Math.cos(ThLocal)
+		const STH = Math.sin(ThLocal)
+
 		const H = radVectAbs - global.ENVIRO.RE
 		const atmoEnv = global.ENVIRO.Atmo.getAtmo(H)
 		const Mach = Vabs / atmoEnv.aSn
@@ -124,39 +124,41 @@ class VehicleStage {
 		const SA = Math.sin(alpha/57.3)
 		const CG = Math.cos(gamma/57.3)
 		const SG = Math.sin(gamma/57.3)
+
 		this.CX_mod.checkArgs(Mach, alpha)
 		this.CY_mod.checkArgs(Mach, alpha)
-		
 		const XA = this.CX_mod.interp(Mach, alpha) * QS
 		const YA = this.CY_mod.interp(Mach, alpha) * QS
 		const gravForce = - global.ENVIRO.KE / radVect3
 
-		const X_x = CTH * CPS
-		const X_y = STH
-		const X_z = CTH * SPS
-		const Y_x = -STH * CPS - CTH * SPS * SG
-		const Y_y = CTH * CG
-		const Y_z = -STH * SPS + CTH * CPS * SG
-		
+		const X_x = Vx / Vabs
+		const X_y = Vy / Vabs
+		const X_z = Vz / Vabs
+
+		const zLocal = crossProduct([X_x, X_y, X_z], [X, Y, Y])
+		const zLocalN = vectByScal(zLocal, 1 / absV(zLocal) )
+
+		const [Y_x, Y_y, Y_z] = vect2matrix(arbitRotation(zLocalN, Math.PI * 0.5), [X_x, X_y, X_z])
+
 		if(dFuel > 0) {
 			const R = this.Jrel * dFuel
 			const xSumm = R * CA - XA
 			const ySumm = R * SA + YA
 			
 			return [
-				gravForce * X + (xSumm * X_x + ySumm * Y_x) / m,
-				gravForce * Y + (xSumm * X_y + ySumm * Y_y) / m,
-				gravForce * Z + (xSumm * X_z + ySumm * Y_z) / m,
+				gravForce * X + (xSumm * X_x + ySumm * (CG * Y_x + SG * zLocalN[0])) / m,
+				gravForce * Y + (xSumm * X_y + ySumm * (CG * Y_y + SG * zLocalN[1])) / m,
+				gravForce * Z + (xSumm * X_z + ySumm * (CG * Y_z + SG * zLocalN[2])) / m,
 				Vx,
 				Vy,
-				Vz
+				Vz,
 				-dFuel
 			]	
 		} else {
 			return [
-				gravForce * X + ( - XA * X_x + YA * Y_x ) / m,
-				gravForce * Y + ( - XA * X_y + YA * Y_y ) / m,
-				gravForce * Z + ( - XA * X_z + YA * Y_z ) / m,
+				gravForce * X + ( - XA * X_x + YA * (CG * Y_x + SG * zLocalN[0])) / m,
+				gravForce * Y + ( - XA * X_y + YA * (CG * Y_y + SG * zLocalN[1])) / m,
+				gravForce * Z + ( - XA * X_z + YA * (CG * Y_z + SG * zLocalN[2])) / m,
 				Vx,
 				Vy,
 				Vz,
@@ -189,9 +191,11 @@ class VehicleStage {
 		while( continueIntegrate ) {
 			const kinematics_0 = result[i++].kinematics
 			const K0 = this.derivs(kinematics_0, tau)
-			
-			global.ENVIRO.Atmo.checkIndex(totalHeight(this.kinematics[3], this.kinematics[4], this.kinematics[5])) // уточнили актуальность атмосферы
-			
+
+			global.ENVIRO.Atmo.checkIndex(
+				totalHeight(kinematics_0[3], kinematics_0[4], kinematics_0[5])
+			) // уточнили актуальность атмосферы
+			//if(tau > 788.3) { console.log(K0) }
 			const kinematics_1 = [
 				kinematics_0[0] + dT_05 * K0[0],
 				kinematics_0[1] + dT_05 * K0[1],
@@ -201,6 +205,7 @@ class VehicleStage {
 				kinematics_0[5] + dT_05 * K0[5],
 				kinematics_0[6] + dT_05 * K0[6]
 			]
+
 			const K1 = this.derivs(kinematics_1, tau)
 			
 			tau += dT

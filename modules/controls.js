@@ -136,13 +136,15 @@ const genericControls = {
 			return function(stagePtr, kinematics, t) {
 				const Vx = kinematics[0]
 				const Vy = kinematics[1]
-				const X = kinematics[2]
-				const Y = kinematics[3]
+				const Vz = kinematics[2]
+				const X = kinematics[3]
+				const Y = kinematics[4]
+				const Z = kinematics[5]
 				
-				const V = Math.sqrt(Vx * Vx + Vy * Vy)
-				const H = Math.sqrt(X * X + Y * Y)
+				const V = Math.sqrt(Vx * Vx + Vy * Vy + Vz * Vz)
+				const H = Math.sqrt(X * X + Y * Y + Z * Z)
 				const V_circle = global.ENVIRO.vCircular(H)
-				const Th = localHoryzonTh(Vx, Vy, X, Y)
+				const Th = localHoryzonTh(Vx, Vy, Vz,  X, Y, Z)
 				
 				if(V > vFinal * kCircle) {
 					const alpha = (V > V_circle) ?
@@ -215,22 +217,23 @@ const genericControls = {
 			let vRetro = 0
 
 			return function(stagePtr, kinematics, t) {
-				const X = kinematics[2]
-				const Y = kinematics[3]
+				const X = kinematics[3]
+				const Y = kinematics[4]
+				const Z = kinematics[5]
 								
-				const Hglob = Math.sqrt(X * X + Y * Y)
+				const Hglob = Math.sqrt(X * X + Y * Y + Z * Z)
 				const Hlocl = Hglob - global.ENVIRO.RE
 				
 				if(Hlocl > hRetro) {
 					return 0
 				} else {
-
-					const mCurrent = kinematics[4]
+					const mCurrent = kinematics[6]
 					
 					if(mCurrent > stagePtr.mDry) {
 						const Vx = kinematics[0]
 						const Vy = kinematics[1]
-						const Vabs = Math.sqrt(Vx * Vx + Vy * Vy)
+						const Vz = kinematics[2]
+						const Vabs = Math.sqrt(Vx * Vx + Vy * Vy + Vz * Vz)
 						if(!vRetro) {
 							vRetro = Vabs
 						}
