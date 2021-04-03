@@ -120,8 +120,8 @@ class VehicleStage {
 		const CG = Math.cos(gamma/57.3)
 		const SG = Math.sin(gamma/57.3)
 
-		this.CX_mod.checkArgs(Mach, alpha)
-		this.CY_mod.checkArgs(Mach, alpha)
+		this.CX_mod.setupIndices(Mach, alpha)
+		this.CY_mod.setupIndices(Mach, alpha)
 		const XA = this.CX_mod.interp(Mach, alpha) * QS
 		const YA = this.CY_mod.interp(Mach, alpha) * QS
 		const gravForce = - global.ENVIRO.KE / radVect3

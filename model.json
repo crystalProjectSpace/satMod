@@ -1,39 +1,6 @@
 {
-	"activeVariant": 3,
+	"activeVariant": 1,
 	"initialVars": [
-		{
-			"vehicle": "vehicle_1",
-			"planet": "Earth",
-			"launchConditions": {
-				"V": 10,
-				"Th": 1.5708,
-				"H": 10
-			},
-			"dT": 0.1,
-			"description": "Test for rocket-powered ascent and gliding reentry"
-		},
-		{
-			"vehicle": "aeolus",
-			"planet": "Mars",
-			"launchConditions": {
-				"V": 7000,
-				"Th": -0.2165,
-				"H": 122000
-			},
-			"dT": 0.1,
-			"description": "Approximate model of AEOLUS Mars reentry vehicle"
-		},
-		{
-			"vehicle": "simple_sat",
-			"planet": "Earth",
-			"launchConditions": {
-				"V": 7788.14,
-				"Th": 0.00001,
-				"H": 200000
-			},
-			"dT": 0.1,
-			"description": "Model of sattelite with reentry capabilities"
-		},
 		{
 			"vehicle": "apollo",
 			"planet": "Earth",
@@ -46,7 +13,21 @@
 				"L": 1
 			},
 			"dT": 0.1,
-			"description": "Apollo-type capsule reentry vehicle"
+			"description": "Apollo-type capsule reentry vehicle. No retro-rocket landing"
+		},
+		{
+			"vehicle": "lifting_body",
+			"planet": "Earth",
+			"launchConditions": {
+				"V": 10904,
+				"Th": -6.9298,
+				"Psi": 45,
+				"H": 120000,
+				"W": -15,
+				"L": 1
+			},
+			"dT": 0.1,
+			"description": "Apollo-type capsule reentry vehicle. No retro-rocket landing"
 		}
 	]	
 }

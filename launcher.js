@@ -35,7 +35,7 @@ getInitData('./model.json')
 		const timeOut = function(dataPoint) {
 			const {t, kinematics} = dataPoint
 			const totalH = Math.sqrt(kinematics[3] * kinematics[3] + kinematics[4] * kinematics[4] + kinematics[5] * kinematics[5])
-			return dataPoint.t > 850 || totalH < global.ENVIRO.RE
+			return dataPoint.t > 4500 || totalH < global.ENVIRO.RE
 		}
 		
 		const controlFunctions = setupControls(alpha_controls, fuel_controls, roll_controls, stage_controls)
@@ -46,7 +46,7 @@ getInitData('./model.json')
 
 		const testTrajectory = testVehicle.calcTrajectory(timeOut, [Vx, Vy, Vz, X, Y, Z], dT)
 		
-		const analyzedTrajectory = analyzeTrajectory(testTrajectory, 5)
+		const analyzedTrajectory = analyzeTrajectory(testTrajectory, 20)
 		
 		trj2CSV(analyzedTrajectory, 'test_trajectory')
 	})	

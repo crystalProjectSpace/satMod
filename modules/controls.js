@@ -133,6 +133,7 @@ const genericControls = {
 			vFinal,
 			kCircle
 		}) {
+			
 			return function(stagePtr, kinematics, t) {
 				const Vx = kinematics[0]
 				const Vy = kinematics[1]
@@ -146,9 +147,9 @@ const genericControls = {
 				const V_circle = global.ENVIRO.vCircular(H)
 				const Th = localHoryzonTh(Vx, Vy, Vz,  X, Y, Z)
 				
-				if(V > vFinal * kCircle) {
+				if(V > vFinal ) {
 					const alpha = (V > V_circle) ?
-					alphaInsert + kThInsert * Th :
+					(Th > 0 ? -alphaInsert : alphaInsert) :
 					alphaGlide + kThGlide * Th
 
 					return alpha > 0 ?
