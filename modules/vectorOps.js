@@ -121,7 +121,7 @@ const Vector = {
         const L0 = Math.asin(U[0] / rad_planar)
         const L = (U[0] > 0) ?
             (U[2] > 0 ? L0 : Math.PI - L0) :
-            (U[2] < 0 ? 1.5 * Math.PI + L0 : 2 * Math.PI + L0) 
+            (U[2] < 0 ? Math.PI - L0 : 2 * Math.PI + L0) 
             
         return {W, L}
     },
