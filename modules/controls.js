@@ -34,14 +34,14 @@ const genericControls = {
 				t_pullup // высота начала маневра планирования
 			}) {
 			return function(stagePtr, kinematics, t) {
-				const H = totalHeight(kinematics[2], kinematics[3])
+				const H = totalHeight(kinematics[3], kinematics[4], kinematics[5])
 				if((t_pullup && t > t_pullup) || !t_pullup) {
-					const Th = localHoryzonTh(kinematics[0], kinematics[1], kinematics[2], kinematics[3])
-					const Vabs = Math.sqrt(kinematics[0] * kinematics[0] + kinematics[1] * kinematics[1])
+					const Th = localHoryzonTh(kinematics[0], kinematics[1], kinematics[2], kinematics[3], kinematics[4], kinematics[5])
+					const Vabs = Math.sqrt(kinematics[0] * kinematics[0] + kinematics[1] * kinematics[1] + kinematics[2] * kinematics[2])
 
 					const alpha = (Vabs > v_dive) ?
-						(alpha_base - k_th * (Th - th_base)) :
-						(alpha_dive - k_th_dive * (Th - th_dive))
+						(alpha_base - k_th * (Th - th_base/57.3)) :
+						(alpha_dive - k_th_dive * (Th - th_dive/57.3))
 
 					return (alpha < 0) ?
 						Math.max(alpha, -alpha_max) :
@@ -164,8 +164,23 @@ const genericControls = {
 	// шаблоны функций управления по крену
 	Roll_functions: {
 		"no_roll": function() {
-			return function({stagePtr, kinematics, t}) {
+			return function(stagePtr, kinematics, t) {
 				return 0
+			}
+		},
+		/**
+		 * @description маневр по крену, выполняемый в заданный период времени
+		 * @param {Object} param0 
+		 * @returns {Function}
+		 */
+		"roll_on_time": function({
+			tau_start_roll,
+			tau_stop_roll,
+			gamma_roll
+		}) {
+			return function(stagePtr, kinematics, t) {
+				return (t > tau_start_roll && t < tau_stop_roll) ?
+					gamma_roll : 0
 			}
 		}
 	},
@@ -331,7 +346,7 @@ const genericControls = {
 				cutOffControls: genericControls.stage_functions[stageType](stagePrms)
 			})
 		}
-		
+	
 		return result
 	}
 }

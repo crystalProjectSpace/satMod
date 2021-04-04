@@ -1,7 +1,7 @@
 'use strict'
 
 const {Interp_2D} = require('./interp.js')				// функции табличной интерполяции
-const {totalHeight, localHoryzonTh} = require('./trajectoryUtils.js')	// вычисление высоты из абс.координат
+const {totalHeight} = require('./trajectoryUtils.js')	// вычисление высоты из абс.координат
 const { absV, crossProduct, vectByScal, vect2matrix, arbitRotation } = require('./vectorOps.js')
 class VehicleStage {
 	/**
@@ -190,7 +190,6 @@ class VehicleStage {
 			global.ENVIRO.Atmo.checkIndex(
 				totalHeight(kinematics_0[3], kinematics_0[4], kinematics_0[5])
 			) // уточнили актуальность атмосферы
-			//if(tau > 788.3) { console.log(K0) }
 			const kinematics_1 = [
 				kinematics_0[0] + dT_05 * K0[0],
 				kinematics_0[1] + dT_05 * K0[1],

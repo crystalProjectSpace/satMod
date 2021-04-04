@@ -29,22 +29,28 @@
 	],
 	"alpha_controls": [
 		{
-			"type": "aerobrake",
+			"type": "level_flight",
 			"prms": { 
-				"alphaMax": 35,
-				"alphaInsert": 30,
-				"alphaGlide": 17.5,
-				"kThInsert": -6750,
-				"kThGlide": 0,
-				"vFinal": 1000,
-				"kCircle": 1.4
+				"alpha_base": 12.5,
+				"k_th": 375,
+				"th_base": 0,
+				"v_dive": 400,
+				"alpha_dive": 20,
+				"k_th_dive": 350,
+				"th_dive": -10,
+				"alpha_max": 55,
+				"t_pullup": 225
 			}
 		}
 	],
 	"roll_controls": [
 		{
-			"type": "no_roll",
-			"prms": {}
+			"type": "roll_on_time",
+			"prms": {
+				"tau_start_roll": 250,
+				"tau_stop_roll": 1050,
+				"gamma_roll": 60
+			}
 		}
 	],
 	"fuel_controls": [

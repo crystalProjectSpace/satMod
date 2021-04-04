@@ -43,10 +43,11 @@ getInitData('./model.json')
 		const testVehicle = new CompositeVehicle()
 		
 		testVehicle.setupVehicle(initData, controlFunctions)
+		
 
 		const testTrajectory = testVehicle.calcTrajectory(timeOut, [Vx, Vy, Vz, X, Y, Z], dT)
 		
-		const analyzedTrajectory = analyzeTrajectory(testTrajectory, 20)
+		const analyzedTrajectory = analyzeTrajectory(testTrajectory, 10)
 		
 		trj2CSV(analyzedTrajectory, 'test_trajectory')
 	})	

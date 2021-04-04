@@ -1,5 +1,5 @@
 {
-	"activeVariant": 1,
+	"activeVariant": 3,
 	"initialVars": [
 		{
 			"vehicle": "apollo",
@@ -13,7 +13,7 @@
 				"L": 1
 			},
 			"dT": 0.1,
-			"description": "Apollo-type capsule reentry vehicle. No retro-rocket landing"
+			"description": "Apollo-type capsule reentry vehicle. No retro-rocket landing. Moon reentry scenario"
 		},
 		{
 			"vehicle": "lifting_body",
@@ -27,7 +27,35 @@
 				"L": 1
 			},
 			"dT": 0.1,
-			"description": "Apollo-type capsule reentry vehicle. No retro-rocket landing"
+			"description": "Biconic lifting body with high L/D ration (1.2 - 1.3 ). Moon reentry scenario"
+		},
+		{
+			"vehicle": "apollo_deorbit",
+			"planet": "Earth",
+			"launchConditions": {
+				"V": 7650,
+				"Th": -1.5,
+				"Psi": 0,
+				"H": 120000,
+				"W": 0.25,
+				"L": 0.5
+			},
+			"dT": 0.1,
+			"description": "Apollo-type capsule reentry vehicle. No retro-rocket landing. LEO deorbit scenarion"
+		},
+		{
+			"vehicle": "lifting_body_deorbit",
+			"planet": "Earth",
+			"launchConditions": {
+				"V": 7650,
+				"Th": -1.5,
+				"Psi": 0,
+				"H": 120000,
+				"W": 0.25,
+				"L": 0.5
+			},
+			"dT": 0.1,
+			"description": "Biconic lifting body with high L/D ration (1.2 - 1.3 ). LEO deorbit scenario"
 		}
 	]	
 }
