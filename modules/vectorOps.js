@@ -58,8 +58,8 @@ const Vector = {
      * @description Построить плоскость по трем точкам
      */
     points2plane: function(U, V, W) {
-        const UV = U - V
-        const WV = W - V
+        const UV = Vector.vectSubt(U, V)
+        const WV = Vector.vectSubt(W, V)
         const norm = Vector.crossProduct(UV, WV)
         const dNorm = 1 / Vector.absV(norm)
         

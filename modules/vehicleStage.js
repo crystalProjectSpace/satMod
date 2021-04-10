@@ -126,14 +126,12 @@ class VehicleStage {
 		const YA = this.CY_mod.interp(Mach, alpha) * QS
 		const gravForce = - global.ENVIRO.KE / radVect3
 
-		const X_x = Vx / Vabs
-		const X_y = Vy / Vabs
-		const X_z = Vz / Vabs
+		const vNorm = [Vx / Vabs, Vy / Vabs, Vz / Vabs]
 
-		const zLocal = crossProduct([X_x, X_y, X_z], [X, Y, Z])
+		const zLocal = crossProduct(vNorm, [X, Y, Z])
 		const zLocalN = vectByScal(zLocal, 1 / absV(zLocal) )
 
-		const [Y_x, Y_y, Y_z] = vect2matrix(arbitRotation(zLocalN, Math.PI * 0.5), [X_x, X_y, X_z])
+		const [Y_x, Y_y, Y_z] = vect2matrix(arbitRotation(zLocalN, Math.PI * 0.5), vNorm)
 
 		if(dFuel > 0) {
 			const R = this.Jrel * dFuel
@@ -141,9 +139,9 @@ class VehicleStage {
 			const ySumm = R * SA + YA
 			
 			return [
-				gravForce * X + (xSumm * X_x + ySumm * (CG * Y_x + SG * zLocalN[0])) / m,
-				gravForce * Y + (xSumm * X_y + ySumm * (CG * Y_y + SG * zLocalN[1])) / m,
-				gravForce * Z + (xSumm * X_z + ySumm * (CG * Y_z + SG * zLocalN[2])) / m,
+				gravForce * X + (xSumm * vNorm[0] + ySumm * (CG * Y_x + SG * zLocalN[0])) / m,
+				gravForce * Y + (xSumm * vNorm[1] + ySumm * (CG * Y_y + SG * zLocalN[1])) / m,
+				gravForce * Z + (xSumm * vNorm[2] + ySumm * (CG * Y_z + SG * zLocalN[2])) / m,
 				Vx,
 				Vy,
 				Vz,
@@ -151,9 +149,9 @@ class VehicleStage {
 			]	
 		} else {
 			return [
-				gravForce * X + ( - XA * X_x + YA * (CG * Y_x + SG * zLocalN[0])) / m,
-				gravForce * Y + ( - XA * X_y + YA * (CG * Y_y + SG * zLocalN[1])) / m,
-				gravForce * Z + ( - XA * X_z + YA * (CG * Y_z + SG * zLocalN[2])) / m,
+				gravForce * X + ( - XA * vNorm[0] + YA * (CG * Y_x + SG * zLocalN[0])) / m,
+				gravForce * Y + ( - XA * vNorm[1] + YA * (CG * Y_y + SG * zLocalN[1])) / m,
+				gravForce * Z + ( - XA * vNorm[2] + YA * (CG * Y_z + SG * zLocalN[2])) / m,
 				Vx,
 				Vy,
 				Vz,
