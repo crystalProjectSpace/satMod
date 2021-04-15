@@ -32,7 +32,10 @@ const fileUtils = {
 				Z,		// поперечная
 				Vx,		// скорость продольная (ГСК)
 				Vy,		// скорость вертикальная (ГСК)
-				Vz		// скорость поперечная
+				Vz,		// скорость поперечная
+				T0,		// температура восстановления
+				qHeat,	// тепловой поток
+				Teq		// равновесная температура
 			] = dataPoint
 			
 			return [
@@ -57,6 +60,9 @@ const fileUtils = {
 				Vx.toFixed(1),
 				Vy.toFixed(1),
 				Vz.toFixed(1),
+				T0.toFixed(1),
+				qHeat.toFixed(4),
+				Teq.toFixed(1),
 		].join(',\t')
 		}).join('\n')
 		

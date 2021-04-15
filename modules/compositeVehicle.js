@@ -49,6 +49,8 @@ class CompositeVehicle {
 				this.stageMasses[i].m0,
 				massGeometry.sMid,
 				massGeometry.jRel,
+				massGeometry.size,
+				massGeometry.kEmission,
 				ADX.MV,
 				ADX.AV,
 				ADX.CXMA,
@@ -86,7 +88,8 @@ class CompositeVehicle {
 	calcTrajectory(globalFlag, startConditions, dT) {
 		let tau = 0
 		let globalResult = []
-		const conditions = {t: tau, kinemtics: startConditions}
+		let stageTau = []
+
 		this.setupStageKinematics(
 			startConditions[0],
 			startConditions[1],
@@ -113,6 +116,8 @@ class CompositeVehicle {
 			if(!finishFlight) {
 				const lastPoint = globalResult[lastIndex].kinematics
 				tau = globalResult[lastIndex].t
+
+				stageTau.push(tau)
 				
 				const Vx = lastPoint[0]
 				const Vy = lastPoint[1]
@@ -131,7 +136,7 @@ class CompositeVehicle {
 		
 		console.log(`Trajectory calc cmpl\nTime elapsed: ${(performance.now() - timeStart).toFixed(3)}ms\n`)
 		
-		return globalResult
+		return { trajectory: globalResult, stageTau }
 	}
 }
 

@@ -13,6 +13,9 @@ class VehicleStage {
 		this.mDry = 0	//	масса незаправленной ступени
 		this.sMid = 0	//	площадь миделя
 		this.Jrel = 0	//	удельный импульс ДУ
+		this.size = 0		// характерная длина ступени
+		this.kEmission = 0	// коэффициент черноты ступени
+
 		this.CX_mod = null	//	интерполятор для CXa
 		this.CY_mod = null	//	интерполятор для CYa
 
@@ -29,11 +32,14 @@ class VehicleStage {
 	* @description задать ИД по массам конструкции, топлива, АДХ
 	* @return {void}
 	*/
-	init(mFuel, mDry, sMid, Jrel, MV, AV, CX, CY) {
+	init(mFuel, mDry, sMid, Jrel, size, kEmission, MV, AV, CX, CY) {
 		this.mFuel = mFuel
 		this.mDry = mDry
 		this.sMid = sMid
 		this.Jrel = Jrel
+
+		this.size = size
+		this.kEmission = kEmission
 		
 		this.CX_mod = new Interp_2D()
 		this.CY_mod = new Interp_2D()

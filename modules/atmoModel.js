@@ -30,17 +30,25 @@ const AtmoModel = function() {
 	/**
 	* @description Получить параметры атмосферы (плотность, температура, скорость звука, плотность)
 	*/
-	this.getAtmo = H => {
+	this.getAtmo = (H, needNu = false) => {
 		const atmoH_0 = this.atmoData[this.index]
 		const atmoH_1 = this.atmoData[this.index + 1]
 		const hRel = (H - atmoH_0[0]) / (atmoH_1[0] - atmoH_0[0])
 			
-		return {
+		const result = {
 			P: atmoH_0[2] + (atmoH_1[2] - atmoH_0[2]) * hRel,
 			T: atmoH_0[1] + (atmoH_1[1] - atmoH_0[1]) * hRel,
 			aSn: atmoH_0[4] + (atmoH_1[4] - atmoH_0[4]) * hRel,
-			Ro: atmoH_0[3] + (atmoH_1[3] - atmoH_0[3]) * hRel
+			Ro: atmoH_0[3] + (atmoH_1[3] - atmoH_0[3]) * hRel,
 		}
+
+		if(needNu) {
+			const Nu = 1.458E-6 * (result.T**1.5) / ((110.4 + result.T) * result.Ro)
+			return {...result, Nu}			
+		} else {
+			return result
+		}
+
 	}
 }
 

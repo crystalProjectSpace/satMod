@@ -9,15 +9,18 @@ getInitData('./model.json')
 	const vehicleDataPath = `./data/${vehicle.toLowerCase()}.json`
 	
 	getInitData(planetDataPath)
-	.then(({R, K, atmosphere}) => {
+	.then(({R, K, atmosphere, k_gas, R_gas, solar_constant}) => {
 		const AtmoModel = require('./modules/atmoModel.js')
 
 		const Atmo = new AtmoModel()
 		Atmo.initAtmo(atmosphere)
 		
-		global.ENVIRO = {
+		global.ENVIRO = {			
 			RE: R,
 			KE: K,
+			k_gas,
+			R_gas,
+			solar_constant,
 			Atmo,
 			vCircular: H => Math.sqrt(K / H)
 		}
@@ -45,9 +48,9 @@ getInitData('./model.json')
 		testVehicle.setupVehicle(initData, controlFunctions)
 		
 
-		const testTrajectory = testVehicle.calcTrajectory(timeOut, [Vx, Vy, Vz, X, Y, Z], dT)
+		const {trajectory, stageTau} = testVehicle.calcTrajectory(timeOut, [Vx, Vy, Vz, X, Y, Z], dT)
 		
-		const analyzedTrajectory = analyzeTrajectory(testTrajectory, 10)
+		const analyzedTrajectory = analyzeTrajectory(trajectory, testVehicle, stageTau, 10)
 		
 		trj2CSV(analyzedTrajectory, 'test_trajectory')
 	})	

@@ -5,7 +5,51 @@ const {
 	vectByScal, vect2matrix, decart2sphere, sphereDelta, azimuth
 } = require('./vectorOps.js')
 
+const Pr = 0.71 // Число Прандтля, участвует в расчете теплового состояния
+const kStefBoltz = 5.67037E-8 // постоянная Стефана-Больцмана
+
 const trajectoryUtils = {
+	/**
+	* @description Температура восстановления
+	* @return {Number}
+	*/
+	stagnTemperature: function(T, M, k) {
+		const dTBase = (1 + 0.5 * (k - 1) * Math.sqrt(Pr) * M * M)
+		const kThermal = M < 6.5 ? 1 :
+			(M > 30 ? 0.7 : 1 - 0.012765 * (M - 6.5))// учет потери энергии потока на диссоциацию и ионизацию
+		return T * Math.pow(dTBase, kThermal)
+	},
+	/**
+	 * @description осредненный местный тепловой поток
+	 * @param {*} k_gas 
+	 * @param {*} R_gas 
+	 * @param {*} Re 
+	 * @returns 
+	 */
+	heatFlow: function(k_gas, R_gas, Re, Ro, V) {
+		const Cp = k_gas * R_gas / (k_gas - 1)
+		return 0.029 * Cp * Ro * V * Math.pow(Pr, -0.6667) * Math.pow(Re * 0.5, -0.2)
+	},
+	/**
+	 * @description равновесная температура с учетом переизлучения
+	 */
+	tEquilibrium: function(Q, Tstag, kEmission, irradiation) {
+		const qSumm = function(T) {
+			const T2 = T * T
+			return  Q * (Tstag - T) + kEmission * (irradiation - kStefBoltz * T2 * T2)
+		}
+
+		let T1 = 0
+		let T2 = Tstag
+
+		while(Math.abs(T2 - T1) > 1E-3) {
+			const T_05 = 0.5 * (T1 + T2)
+			const dQ = qSumm(T_05)
+			dQ > 0 ? (T1 = T_05) : (T2 = T_05)
+		}
+
+		return 0.5 * (T1 + T2)
+	},
 	/**
 	* @description угол наклона к местному горизонту 
 	* @return {Number}
@@ -82,12 +126,15 @@ const trajectoryUtils = {
 	* @param {Array.<{kinematics: Array.<Number>, t: Number}>} массив "сырых" точек по траектории
 	* @return {Array.<Array.<Number>>} Массив траекторных данных
 	*/
-	analyzeTrajectory: function(rawTrajectory, rarify = 1) {
+	analyzeTrajectory: function(rawTrajectory, vehicle, tauStage, rarify = 1) {
 		const nTrajectory = rawTrajectory.length
 		const {
 			absVelocity,
 			localHoryzonTh,
-			totalHeight
+			totalHeight,
+			stagnTemperature,
+			heatFlow,
+			tEquilibrium
 		} = trajectoryUtils
 		
 		let V_0 = 0
@@ -103,11 +150,12 @@ const trajectoryUtils = {
 		let Fi_0 = 0
 		let Fi_1 = 0
 		let L = 0
+		let currentStage = 0
 		const dT = rawTrajectory[1].t - rawTrajectory[0].t
 		
 		const result = []
 		
-		const {KE, RE, Atmo} = global.ENVIRO
+		const {KE, RE, Atmo, k_gas, R_gas, solar_constant} = global.ENVIRO
 
 		for(let i = 0; i < nTrajectory; i++) {
 			const {t, kinematics} = rawTrajectory[i]
@@ -119,7 +167,9 @@ const trajectoryUtils = {
 			const hTotal = H + RE
 			const g = KE / (hTotal * hTotal)
 			const spherCor = decart2sphere([X, Y, Z])
-
+			
+			if(t > tauStage[currentStage]) { currentStage++ }
+			
 			let nX = 0
 			let nY = 0
 			let nZ = 0
@@ -157,10 +207,16 @@ const trajectoryUtils = {
 				M1 = m
 			}
 			i === 0 ? Atmo.setupIndex(H) : Atmo.checkIndex(H)
-			const atmoEnv = Atmo.getAtmo(H)
-			const Q =  atmoEnv.Ro * V2 * 0.5
+			const {aSn, Ro, T, Nu} = Atmo.getAtmo(H, true)
+			const Q =  Ro * V2 * 0.5
 			
-			const Mach = Vabs / atmoEnv.aSn
+			const {size, kEmission} = vehicle.stages[currentStage]
+			const Mach = Vabs / aSn
+			const Re = Vabs * size / Nu
+			const qHeat = heatFlow(k_gas, R_gas, Re, Ro, Vabs)
+
+			const T0 = stagnTemperature(T, Mach, k_gas)
+			const Teq = tEquilibrium(qHeat, T0, kEmission, solar_constant)
 			if( i % rarify === 0) {
 				result.push([
 					t,		// текущее время
@@ -183,7 +239,10 @@ const trajectoryUtils = {
 					Z,		// поперечная
 					Vx,		// скорость продольная (ГСК)
 					Vy,		// скорость вертикальная (ГСК)
-					Vz		// скорость поперечная
+					Vz,		// скорость поперечная
+					T0,		// температура восстановления
+					qHeat,	// тепловой поток
+					Teq		// равновесная температура 
 				])
 			}
 		}

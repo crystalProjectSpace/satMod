@@ -23,6 +23,8 @@
 				"mDry": 5160,
 				"mFuel": 300,
 				"sMid": 11.94,
+				"size": 3.3,
+				"kEmission": 0.75,
 				"jRel": -2750
 			}
 		}
