@@ -26,17 +26,24 @@ const trajectoryUtils = {
 	 * @param {*} Re 
 	 * @returns 
 	 */
-	heatFlow: function(k_gas, R_gas, Re, Ro, V) {
+	heatFlow2: function(size, k_gas, R_gas, Ro, V, Twall, Tinf) {
 		const Cp = k_gas * R_gas / (k_gas - 1)
-		return 0.029 * Cp * Ro * V * Math.pow(Pr, -0.6667) * Math.pow(Re * 0.5, -0.2)
+		const V2 = V * V
+		return 1.83E-4 * Math.sqrt(Ro/size) * (V * V2) * (1 - Cp * Twall / ( 0.5 * V2 + Cp * Tinf))
+	},
+	heatFlow2X: function(alpha, size, k_gas, R_gas, Ro, V, Twall, Tinf) {
+		const Cp = k_gas * R_gas / (k_gas - 1)
+		const CTA = Math.cos(alpha)
+		const STA = Math.sin(alpha)
+		return 2.53E-5 * STA*Math.sqrt(CTA*Ro/size) * Math.pow(V, 3.2) * (1 - Cp * Twall / ( 0.5 * V*V + Cp * Tinf))
 	},
 	/**
 	 * @description равновесная температура с учетом переизлучения
 	 */
-	tEquilibrium: function(Q, Tstag, kEmission, irradiation) {
+	tEquilibrium2: function(alpha, size, k_gas, R_gas, Ro, V, kEmission, irradiation, Tstag, Tinf) {
 		const qSumm = function(T) {
 			const T2 = T * T
-			return  Q * (Tstag - T) + kEmission * (irradiation - kStefBoltz * T2 * T2)
+			return  trajectoryUtils.heatFlow2X(alpha, size, k_gas, R_gas, Ro, V, T, Tinf) + kEmission * (irradiation - kStefBoltz * T2 * T2)
 		}
 
 		let T1 = 0
@@ -133,8 +140,7 @@ const trajectoryUtils = {
 			localHoryzonTh,
 			totalHeight,
 			stagnTemperature,
-			heatFlow,
-			tEquilibrium
+			tEquilibrium2
 		} = trajectoryUtils
 		
 		let V_0 = 0
@@ -207,16 +213,16 @@ const trajectoryUtils = {
 				M1 = m
 			}
 			i === 0 ? Atmo.setupIndex(H) : Atmo.checkIndex(H)
-			const {aSn, Ro, T, Nu} = Atmo.getAtmo(H, true)
+			const {aSn, Ro, T} = Atmo.getAtmo(H, true)
 			const Q =  Ro * V2 * 0.5
 			
-			const {size, kEmission} = vehicle.stages[currentStage]
+			const currentStagePtr = vehicle.stages[currentStage]
+			const {size, kEmission} = currentStagePtr
+			const alpha = currentStagePtr.alphaControl(currentStagePtr, kinematics, t)
 			const Mach = Vabs / aSn
-			const Re = Vabs * size / Nu
-			const qHeat = heatFlow(k_gas, R_gas, Re, Ro, Vabs)
-
+			
 			const T0 = stagnTemperature(T, Mach, k_gas)
-			const Teq = tEquilibrium(qHeat, T0, kEmission, solar_constant)
+			const Teq = tEquilibrium2(alpha/57.3, 0.5*size, k_gas, R_gas, Ro, Vabs, kEmission, solar_constant, T0, T)
 			if( i % rarify === 0) {
 				result.push([
 					t,		// текущее время
@@ -241,8 +247,8 @@ const trajectoryUtils = {
 					Vy,		// скорость вертикальная (ГСК)
 					Vz,		// скорость поперечная
 					T0,		// температура восстановления
-					qHeat,	// тепловой поток
-					Teq		// равновесная температура 
+					Teq,		// равновесная температура
+					alpha
 				])
 			}
 		}
